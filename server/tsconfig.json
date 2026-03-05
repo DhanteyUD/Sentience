@@ -12,6 +12,6 @@
     "skipLibCheck": true,
     "declaration": true
   },
-  "include": ["src/**/*", "tests/**/*", "dashboard/**/*"],
+  "include": ["src/**/*", "src/tests/**/*", "dashboard/**/*"],
   "exclude": ["node_modules", "dist"]
 }

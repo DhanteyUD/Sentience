@@ -1,10 +1,10 @@
-import { AgentWallet } from '../src/wallet/AgentWallet';
-import { WalletManager } from '../src/wallet/WalletManager';
-import { AgentOrchestrator } from '../src/agent/AgentOrchestrator';
-import { TradingAgent } from '../src/agent/TradingAgent';
-import { JupiterProtocol, TOKENS } from '../src/protocols/JupiterProtocol';
-import { encryptPrivateKey, decryptPrivateKey, listKeystores, deleteKeystore } from '../src/utils/encryption';
-import { logger } from '../src/utils/logger';
+import { AgentWallet } from './wallet/AgentWallet';
+import { WalletManager } from './wallet/WalletManager';
+import { AgentOrchestrator } from './agent/AgentOrchestrator';
+import { TradingAgent } from './agent/TradingAgent';
+import { JupiterProtocol, TOKENS } from './protocols/JupiterProtocol';
+import { encryptPrivateKey, decryptPrivateKey, listKeystores, deleteKeystore } from './utils/encryption';
+import { logger } from './utils/logger';
 import * as fs from 'fs';
 
 let passed = 0;

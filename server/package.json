@@ -6,7 +6,7 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "demo": "ts-node src/demo.ts",
-    "test": "ts-node tests/test-suite.ts",
+    "test": "ts-node src/test-suite.ts",
     "dashboard": "node dashboard/server.js"
   },
   "dependencies": {
