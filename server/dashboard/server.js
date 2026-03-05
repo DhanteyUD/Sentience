@@ -6,9 +6,8 @@ const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocketServer({ 
+const wss = new WebSocketServer({
   server,
-  // Accept connections on both root path (prod) and /ws path (dev via Vite proxy)
   handleProtocols: () => false,
 });
 
@@ -28,24 +27,24 @@ function generateWalletAddress() {
 }
 
 const agentTemplates = [
-  { name: 'Alpha-DCA',     type: 'TRADING',   strategy: 'DCA',         color: '#00d4ff' },
-  { name: 'Beta-Momentum', type: 'TRADING',   strategy: 'MOMENTUM',    color: '#ff6b35' },
-  { name: 'LP-Provider',   type: 'LIQUIDITY', strategy: 'BALANCED',    color: '#39ff14' },
-  { name: 'Risk-Monitor',  type: 'MONITOR',   strategy: 'WATCHDOG',    color: '#ffd93d' },
-  { name: 'Gamma-Revert',  type: 'TRADING',   strategy: 'MEAN_REVERT', color: '#c77dff' },
+  { name: 'Alpha-DCA', type: 'TRADING', strategy: 'DCA', color: '#00d4ff' },
+  { name: 'Beta-Momentum', type: 'TRADING', strategy: 'MOMENTUM', color: '#ff6b35' },
+  { name: 'LP-Provider', type: 'LIQUIDITY', strategy: 'BALANCED', color: '#39ff14' },
+  { name: 'Risk-Monitor', type: 'MONITOR', strategy: 'WATCHDOG', color: '#ffd93d' },
+  { name: 'Gamma-Revert', type: 'TRADING', strategy: 'MEAN_REVERT', color: '#c77dff' },
 ];
 
 function getActionResult(action) {
   const results = {
-    BUY:           `Bought 0.001 SOL at $${(182 + Math.random() * 5).toFixed(2)}`,
-    SELL:          `Sold 0.001 SOL at $${(182 + Math.random() * 5).toFixed(2)}`,
-    HOLD:          `Price $${(182 + Math.random() * 5).toFixed(2)} — holding position`,
+    BUY: `Bought 0.001 SOL at $${(182 + Math.random() * 5).toFixed(2)}`,
+    SELL: `Sold 0.001 SOL at $${(182 + Math.random() * 5).toFixed(2)}`,
+    HOLD: `Price $${(182 + Math.random() * 5).toFixed(2)} — holding position`,
     ADD_LIQUIDITY: `Added 0.3 SOL to LP pool — APR: ${(15 + Math.random() * 20).toFixed(1)}%`,
-    HARVEST:       `Harvested ${(Math.random() * 0.1).toFixed(4)} USDC in fees`,
-    REBALANCE:     `Pool rebalanced successfully`,
-    MONITOR:       `Pool healthy`,
-    RISK_CHECK:    `LOW risk (score: ${Math.floor(Math.random() * 25)}) — Position healthy`,
-    ALERT:         `HIGH risk detected — unusual activity pattern`,
+    HARVEST: `Harvested ${(Math.random() * 0.1).toFixed(4)} USDC in fees`,
+    REBALANCE: `Pool rebalanced successfully`,
+    MONITOR: `Pool healthy`,
+    RISK_CHECK: `LOW risk (score: ${Math.floor(Math.random() * 25)}) — Position healthy`,
+    ALERT: `HIGH risk detected — unusual activity pattern`,
   };
   return results[action] || 'Action completed';
 }
@@ -71,9 +70,9 @@ let systemState = {
 };
 
 systemState.agents.forEach(agent => {
-  const actions = agent.type === 'TRADING' ? ['BUY','SELL','HOLD','BUY','HOLD']
-    : agent.type === 'LIQUIDITY' ? ['ADD_LIQUIDITY','HARVEST','MONITOR','REBALANCE','MONITOR']
-    : ['RISK_CHECK','ALERT','RISK_CHECK','RISK_CHECK','MONITOR'];
+  const actions = agent.type === 'TRADING' ? ['BUY', 'SELL', 'HOLD', 'BUY', 'HOLD']
+    : agent.type === 'LIQUIDITY' ? ['ADD_LIQUIDITY', 'HARVEST', 'MONITOR', 'REBALANCE', 'MONITOR']
+      : ['RISK_CHECK', 'ALERT', 'RISK_CHECK', 'RISK_CHECK', 'MONITOR'];
   agent.actionLog = actions.map((action, i) => ({
     action, result: getActionResult(action), success: Math.random() > 0.1,
     timestamp: new Date(Date.now() - i * 5000).toISOString(),
@@ -105,7 +104,7 @@ setInterval(() => {
     agent.lastAction = action;
     agent.lastActionAt = new Date().toISOString();
     agent.riskLevel = (agent.type === 'MONITOR' && action === 'ALERT') ? 'HIGH'
-                    : agent.balanceSOL < 0.1 ? 'MEDIUM' : 'LOW';
+      : agent.balanceSOL < 0.1 ? 'MEDIUM' : 'LOW';
     agent.actionLog.unshift({ action, result: getActionResult(action), success: Math.random() > 0.08, timestamp: new Date().toISOString() });
     if (agent.actionLog.length > 20) agent.actionLog.pop();
     systemState.txCount++;
@@ -116,7 +115,6 @@ setInterval(() => {
   wss.clients.forEach(c => { if (c.readyState === 1) c.send(payload); });
 }, 3000);
 
-// REST API
 app.get('/api/state', (req, res) => res.json(systemState));
 
 app.post('/api/agents/:id/pause', (req, res) => {
@@ -147,7 +145,6 @@ app.post('/api/agents/spawn', (req, res) => {
   res.json(agent);
 });
 
-// Production: serve built React app
 if (process.env.NODE_ENV === 'production') {
   const clientDist = path.join(__dirname, '../../client/dist');
   app.use(express.static(clientDist));
@@ -159,7 +156,7 @@ if (process.env.NODE_ENV === 'production') {
     res.json({
       name: 'Sentience API', status: 'online', mode: 'development',
       message: 'React dashboard → http://localhost:5173',
-      endpoints: ['GET /api/state','POST /api/agents/:id/pause','POST /api/agents/:id/resume','POST /api/agents/:id/stop','POST /api/agents/spawn'],
+      endpoints: ['GET /api/state', 'POST /api/agents/:id/pause', 'POST /api/agents/:id/resume', 'POST /api/agents/:id/stop', 'POST /api/agents/spawn'],
     });
   });
 }

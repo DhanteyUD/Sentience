@@ -2,11 +2,9 @@ import { Connection, PublicKey, VersionedTransaction } from '@solana/web3.js';
 import { AgentWallet } from '../wallet/AgentWallet';
 import { logger } from '../utils/logger';
 
-// Jupiter V6 API - works on mainnet; for devnet we simulate the quote structure
 const JUPITER_QUOTE_API = 'https://quote-api.jup.ag/v6/quote';
 const JUPITER_SWAP_API = 'https://quote-api.jup.ag/v6/swap';
 
-// Well-known token mints (mainnet - for devnet testing use devnet equivalents)
 export const TOKENS = {
   SOL: 'So11111111111111111111111111111111111111112',
   USDC: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
@@ -66,10 +64,9 @@ export class JupiterProtocol {
     amountLamports: number,
     slippageBps: number
   ): SwapQuote {
-    // Simulate SOL→USDC at ~$180 rate
     const inputSOL = amountLamports / 1e9;
     const priceImpact = Math.random() * 0.1;
-    const outAmount = inputSOL * 180 * (1 - priceImpact / 100) * 1e6; // USDC has 6 decimals
+    const outAmount = inputSOL * 180 * (1 - priceImpact / 100) * 1e6;
 
     return {
       inputMint,
@@ -98,8 +95,6 @@ export class JupiterProtocol {
 
     logger.tx(`Jupiter: Quote received — output: ${(outAmount / 1e6).toFixed(2)} USDC, impact: ${priceImpact.toFixed(3)}%`);
 
-    // On devnet, we can't use mainnet Jupiter, so we demonstrate the signing pipeline
-    // by executing a self-transfer as proof of autonomous signing capability
     try {
       const balance = await this.wallet.getSOLBalance();
       if (balance > 0.001) {
@@ -116,7 +111,6 @@ export class JupiterProtocol {
       logger.warn(`Swap execution failed: ${e.message}`);
     }
 
-    // Return simulated result for demo purposes
     return {
       signature: 'simulated_' + Math.random().toString(36).slice(2, 18),
       inputAmount: amountLamports / 1e9,

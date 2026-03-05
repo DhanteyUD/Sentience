@@ -48,12 +48,10 @@ export class MonitorAgent extends BaseAgent {
       `${this.name}: Balance=${balance.toFixed(4)} SOL | Risk=${risk.level} (${risk.score}/100) | ${risk.recommendation}`
     );
 
-    // Fire alerts for significant risk events
     if (risk.level === 'HIGH' || risk.level === 'CRITICAL') {
       this.fireAlert(risk.level, `Risk factors: ${risk.factors.join(', ')}`);
     }
 
-    // Check balance drop
     const balanceDrop = this.lastBalance - balance;
     if (balanceDrop > (this.config.alertThresholdSOL || 0.05)) {
       this.fireAlert('HIGH', `Balance dropped ${balanceDrop.toFixed(4)} SOL in one cycle`);

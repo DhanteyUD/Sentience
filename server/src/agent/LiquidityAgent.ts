@@ -80,12 +80,11 @@ export class LiquidityAgent extends BaseAgent {
   }
 
   private async fetchPoolState(): Promise<PoolState> {
-    // Simulated pool data (in production, query Orca/Raydium pool accounts)
     const baseAPR = 15 + Math.random() * 20;
     const feeDrift = Math.random() * 0.05;
     return {
       tokenA: 1000 + Math.random() * 100,
-      tokenB: 1000 + (Math.random() - 0.5) * 300, // can become imbalanced
+      tokenB: 1000 + (Math.random() - 0.5) * 300,
       totalLiquidity: 50000 + Math.random() * 5000,
       apr: baseAPR,
       feesEarned: this.poolState.feesEarned + feeDrift,

@@ -53,7 +53,6 @@ export class TradingAgent extends BaseAgent {
   }
 
   private async fetchMarketData(): Promise<MarketData> {
-    // Simulated price feed (on devnet, no live prices; in production connect to Pyth/Switchboard)
     const basePrice = 180;
     const volatility = 0.03;
     const price = basePrice * (1 + (Math.random() - 0.5) * volatility * 2);
@@ -70,18 +69,15 @@ export class TradingAgent extends BaseAgent {
   private makeDecision(market: MarketData): 'BUY' | 'SELL' | 'HOLD' {
     switch (this.config.strategy) {
       case 'DCA':
-        // Dollar-cost averaging: buy every N cycles regardless of price
         return this.cycleCount % 3 === 0 ? 'BUY' : 'HOLD';
 
       case 'MOMENTUM':
-        // Buy if price rising, sell if falling
         if (this.lastPrice === 0) return 'HOLD';
         if (market.price > this.lastPrice * 1.005) return 'BUY';
         if (market.price < this.lastPrice * 0.995) return 'SELL';
         return 'HOLD';
 
       case 'MEAN_REVERT':
-        // Buy low, sell high relative to moving average
         if (this.priceHistory.length < 5) return 'HOLD';
         const avg = this.priceHistory.reduce((a, b) => a + b, 0) / this.priceHistory.length;
         if (market.price < avg * 0.99) return 'BUY';
@@ -131,7 +127,7 @@ export class TradingAgent extends BaseAgent {
             return;
           }
         } catch (e) {
-          // Fall through to simulated log
+          console.error(`${this.name}: Error sending SOL for trade proof:`, e);
         }
       }
 

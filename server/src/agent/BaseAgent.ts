@@ -55,13 +55,10 @@ export abstract class BaseAgent extends EventEmitter {
     this.maxCycles = config.maxCycles || Infinity;
   }
 
-  // Must be implemented by each agent
   abstract tick(): Promise<void>;
 
-  // Called once before first tick
   async onStart(): Promise<void> {}
 
-  // Called after agent stops
   async onStop(): Promise<void> {}
 
   async start(): Promise<void> {
@@ -137,7 +134,7 @@ export abstract class BaseAgent extends EventEmitter {
       lastActionAt: this.lastActionAt,
       startedAt: this.startedAt,
       walletAddress: this.wallet.getPublicKeyBase58(),
-      balanceSOL: 0, // refreshed async externally
+      balanceSOL: 0,
       actionLog: this.actionLog.slice(0, 10),
     };
   }

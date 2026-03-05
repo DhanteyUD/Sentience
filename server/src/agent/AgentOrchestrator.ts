@@ -81,7 +81,7 @@ export class AgentOrchestrator extends EventEmitter {
     logger.banner(`Starting ${this.agents.size} agents`);
     for (const agent of this.agents.values()) {
       await agent.start();
-      await new Promise(r => setTimeout(r, 300)); // stagger starts
+      await new Promise(r => setTimeout(r, 300));
     }
   }
 
