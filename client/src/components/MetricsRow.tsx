@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import type { SystemState } from '../types'
 
@@ -6,44 +7,67 @@ interface MetricsRowProps {
 }
 
 export function MetricsRow({ state }: MetricsRowProps) {
+  const decisionCountRef = useRef(0)
+  const [dpm, setDpm] = useState(0)
+
+  useEffect(() => {
+    if (!state) return
+    decisionCountRef.current += state.agents.filter(a => a.status === 'running').length
+    setDpm(Math.floor(decisionCountRef.current / Math.max(state.uptime / 60, 1)))
+  }, [state])
+
   const running = state?.agents.filter(a => a.status === 'running').length ?? 0
   const hasAlert = state?.agents.some(a => a.riskLevel === 'HIGH' || a.riskLevel === 'CRITICAL')
   const hasMedium = state?.agents.some(a => a.riskLevel === 'MEDIUM')
 
   const riskLabel = hasAlert ? 'HIGH' : hasMedium ? 'MED' : 'LOW'
-  const riskColor = hasAlert ? 'text-rose-400' : hasMedium ? 'text-amber-400' : 'text-emerald-400'
-  const riskSub   = hasAlert ? '⚠ alert firing' : hasMedium ? '~ watch closely' : 'nominal'
+  const riskColor = hasAlert ? 'text-rose-400' : hasMedium ? 'text-amber-400' : 'text-[#39ff14]'
+  const riskSub   = hasAlert ? '⚠ agent alert firing' : hasMedium ? '~ monitoring closely' : 'system nominal'
 
   const metrics = [
     {
-      label: 'Active Agents',
+      label: "Active Agents",
       value: String(running),
-      sub: 'autonomous',
-      accent: 'from-cyan-500',
-      valueColor: 'text-white',
+      sub: "↑ autonomous",
+      accentStyle: { background: "var(--cyan)" },
+      valueStyle: "text-[var(--text)] text-[26px]",
+      subColor: "text-[var(--green)]",
     },
     {
-      label: 'Total SOL',
-      value: state ? state.totalBalance.toFixed(2) : '0.00',
-      sub: 'across all wallets',
-      accent: 'from-emerald-500',
-      valueColor: 'text-white',
+      label: "Total SOL",
+      value: state ? state.totalBalance.toFixed(2) : "0.00",
+      sub: "across all wallets",
+      accentStyle: { background: "var(--green)" },
+      valueStyle: "text-[var(--text)] text-[26px]",
+      subColor: "text-white",
     },
     {
-      label: 'Tx Count',
-      value: state ? state.txCount.toLocaleString() : '0',
-      sub: 'devnet transactions',
-      accent: 'from-orange-500',
-      valueColor: 'text-white',
+      label: "Decisions / min",
+      value: String(dpm),
+      sub: "↑ autonomous actions",
+      accentStyle: { background: "var(--orange)" },
+      valueStyle: "text-[var(--text)] text-[26px]",
+      subColor: "text-[var(--green)]",
     },
     {
-      label: 'Risk Level',
+      label: "Risk Level",
       value: riskLabel,
       sub: riskSub,
-      accent: hasAlert ? 'from-rose-500' : hasMedium ? 'from-amber-500' : 'from-emerald-500',
-      valueColor: riskColor,
+      accentStyle: {
+        background: hasAlert
+          ? "var(--red)"
+          : hasMedium
+            ? "var(--yellow)"
+            : "var(--purple)",
+      },
+      valueStyle: riskColor + " text-[18px]",
+      subColor: hasAlert
+        ? "text-[var(--red)]"
+        : hasMedium
+          ? "text-[var(--yellow)]"
+          : "text-[var(--green)]",
     },
-  ]
+  ];
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -53,18 +77,18 @@ export function MetricsRow({ state }: MetricsRowProps) {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.07, duration: 0.4 }}
-          className="relative bg-[#0d1117] border border-white/[0.07] rounded-xl p-5 overflow-hidden"
+          className="relative bg-[#0d1117] border border-white/[0.07] rounded-[10px] p-4.5 overflow-hidden scanline-bg"
         >
-          <div className={`absolute top-0 left-0 right-0 h-px bg-gradient-to-r ${m.accent} to-transparent`} />
-          <div className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold mb-2">
+          <div className="absolute top-0 left-0 right-0 h-0.5" style={m.accentStyle} />
+          <div className="text-[10px] uppercase text-(--muted) font-semibold">
             {m.label}
           </div>
-          <div className={`font-mono text-3xl font-bold ${m.valueColor} leading-none mb-1`}>
+          <div className={`font-mono font-bold ${m.valueStyle} leading-none mt-2 mb-1`}>
             {m.value}
           </div>
-          <div className="text-[11px] text-zinc-500 font-mono">{m.sub}</div>
+          <div className={`text-[11px] font-mono mt-1.5 ${m.subColor}`}>{m.sub}</div>
         </motion.div>
       ))}
     </div>
-  )
+  );
 }
