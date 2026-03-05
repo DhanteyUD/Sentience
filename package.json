@@ -1,0 +1,21 @@
+{
+  "name": "sentience",
+  "version": "1.0.0",
+  "description": "Sentience — Autonomous AI Agent Wallets for Solana",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently --names SERVER,CLIENT --prefix-colors cyan,magenta \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "cd server && node dashboard/server.js",
+    "dev:client": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "start": "cd client && npm run build && cd ../server && cross-env NODE_ENV=production node dashboard/server.js",
+    "demo": "cd server && npx ts-node src/demo.ts",
+    "test": "cd server && npx ts-node tests/test-suite.ts",
+    "install:all": "npm install && cd client && npm install && cd ../server && npm install",
+    "clean": "rm -rf client/dist client/node_modules server/node_modules node_modules"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3"
+  }
+}

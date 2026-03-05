@@ -1,0 +1,12 @@
+node_modules/
+client/node_modules/
+client/dist/
+server/node_modules/
+server/dist/
+server/.keystore/
+server/.env
+*.log
+.DS_Store
+.vscode/
+.claude
+.keystore/

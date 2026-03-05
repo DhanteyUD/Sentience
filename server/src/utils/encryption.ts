@@ -1,0 +1,74 @@
+import * as CryptoJS from 'crypto-js';
+import * as fs from 'fs';
+import * as path from 'path';
+
+const KEYSTORE_DIR = path.join(process.cwd(), '.keystore');
+
+export interface EncryptedKeystore {
+  id: string;
+  agentName: string;
+  encryptedPrivateKey: string;
+  publicKey: string;
+  createdAt: string;
+  iv: string;
+}
+
+export function ensureKeystoreDir(): void {
+  if (!fs.existsSync(KEYSTORE_DIR)) {
+    fs.mkdirSync(KEYSTORE_DIR, { recursive: true, mode: 0o700 });
+  }
+}
+
+export function encryptPrivateKey(privateKeyBytes: Uint8Array, password: string): { encrypted: string; iv: string } {
+  const privateKeyHex = Buffer.from(privateKeyBytes).toString('hex');
+  const iv = CryptoJS.lib.WordArray.random(16);
+  const key = CryptoJS.PBKDF2(password, iv, { keySize: 256 / 32, iterations: 10000 });
+  const encrypted = CryptoJS.AES.encrypt(privateKeyHex, key, {
+    iv: iv,
+    mode: CryptoJS.mode.CBC,
+    padding: CryptoJS.pad.Pkcs7,
+  });
+  return {
+    encrypted: encrypted.toString(),
+    iv: iv.toString(),
+  };
+}
+
+export function decryptPrivateKey(encrypted: string, iv: string, password: string): Uint8Array {
+  const ivWords = CryptoJS.enc.Hex.parse(iv);
+  const key = CryptoJS.PBKDF2(password, ivWords, { keySize: 256 / 32, iterations: 10000 });
+  const decrypted = CryptoJS.AES.decrypt(encrypted, key, {
+    iv: ivWords,
+    mode: CryptoJS.mode.CBC,
+    padding: CryptoJS.pad.Pkcs7,
+  });
+  const privateKeyHex = decrypted.toString(CryptoJS.enc.Utf8);
+  return Buffer.from(privateKeyHex, 'hex');
+}
+
+export function saveKeystore(keystore: EncryptedKeystore): void {
+  ensureKeystoreDir();
+  const filePath = path.join(KEYSTORE_DIR, `${keystore.id}.json`);
+  fs.writeFileSync(filePath, JSON.stringify(keystore, null, 2), { mode: 0o600 });
+}
+
+export function loadKeystore(agentId: string): EncryptedKeystore | null {
+  const filePath = path.join(KEYSTORE_DIR, `${agentId}.json`);
+  if (!fs.existsSync(filePath)) return null;
+  return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+}
+
+export function listKeystores(): EncryptedKeystore[] {
+  ensureKeystoreDir();
+  const files = fs.readdirSync(KEYSTORE_DIR).filter(f => f.endsWith('.json'));
+  return files.map(f => JSON.parse(fs.readFileSync(path.join(KEYSTORE_DIR, f), 'utf-8')));
+}
+
+export function deleteKeystore(agentId: string): boolean {
+  const filePath = path.join(KEYSTORE_DIR, `${agentId}.json`);
+  if (fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
+    return true;
+  }
+  return false;
+}
