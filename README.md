@@ -177,14 +177,14 @@ npm start                 # Production build with real devnet
 
 ## What Happens On-Chain
 
-| Step | Operation              | Devnet Call                                      |
-|------|------------------------|--------------------------------------------------|
-| 1    | Agent wallets created  | `Keypair.generate()` → Ed25519                   |
-| 2    | Private keys encrypted | AES-256-CBC + PBKDF2 → `.keystore/`              |
-| 3    | Agents funded          | `connection.requestAirdrop()`                    |
-| 4    | Balances queried       | `connection.getBalance()`                        |
-| 5    | Agents transfer SOL    | `SystemProgram.transfer` → signed & broadcast    |
-| 6    | Monitor checks health  | `connection.getSlot()` → real latency            |
+| Step | Operation              | Devnet Call                                     |
+|------|------------------------|-------------------------------------------------|
+| 1    | Agent wallets created  | `Keypair.generate()` → Ed25519                  |
+| 2    | Private keys encrypted | AES-256-CBC + PBKDF2 → `.keystore/`             |
+| 3    | Agents funded          | `connection.requestAirdrop()`                   |
+| 4    | Balances queried       | `connection.getBalance()`                       |
+| 5    | Agents transfer SOL    | `SystemProgram.transfer` → signed & broadcast   |
+| 6    | Monitor checks health  | `connection.getSlot()` → real latency           |
 | 7    | Price from Jupiter     | `quote-api.jup.ag/v6/quote` → `1 SOL → USDC`    |
 
 The private key **never** exists in plaintext on disk. It's encrypted immediately after generation and only decrypted in-memory for signing operations.
