@@ -1,9 +1,9 @@
-import { motion, AnimatePresence } from 'framer-motion'
-import type { FeedItem } from '../types'
-import { timeAgo, ACTION_COLORS } from '../lib/utils'
+import { motion, AnimatePresence } from "framer-motion";
+import type { FeedItem } from "../types";
+import { timeAgo, ACTION_COLORS } from "../lib/utils";
 
 interface ActivityFeedProps {
-  items: FeedItem[]
+  items: FeedItem[];
 }
 
 export function ActivityFeed({ items }: ActivityFeedProps) {
@@ -13,32 +13,36 @@ export function ActivityFeed({ items }: ActivityFeedProps) {
         {items.slice(0, 25).map((item, i) => (
           <motion.div
             key={`${item.agent}-${item.time}-${i}`}
-            initial={{ opacity: 0, x: -10, height: 0 }}
-            animate={{ opacity: 1, x: 0, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25 }}
-            className="flex items-start gap-3 px-5 py-3 border-b border-white/[0.05] last:border-0"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.5 }}
+            className="flex items-start gap-3 px-4.5 py-2.5 border-b border-(--border) last:border-0"
           >
             <div
-              className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0"
+              className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
               style={{ background: item.color }}
             />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold text-white">{item.agent}</span>
-                <span className={`text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded ${
-                  ACTION_COLORS[item.action] || ACTION_COLORS.HOLD
-                }`}>
+                <span className="text-[11px] font-bold text-white">
+                  {item.agent}
+                </span>
+                <span
+                  className={`text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded ${
+                    ACTION_COLORS[item.action] || ACTION_COLORS.HOLD
+                  }`}
+                >
                   {item.action}
                 </span>
               </div>
               {item.result && (
-                <div className="font-mono text-[10px] text-zinc-500 mt-0.5 truncate">
+                <div className="font-mono text-[10px] text-zinc-400 mt-0.5 truncate">
                   {item.result}
                 </div>
               )}
             </div>
-            <div className="font-mono text-[9px] text-zinc-600 flex-shrink-0 pt-0.5">
+            <div className="font-mono text-[9px] text-zinc-400 shrink-0 pt-0.5">
               {timeAgo(item.time)}
             </div>
           </motion.div>
@@ -50,5 +54,5 @@ export function ActivityFeed({ items }: ActivityFeedProps) {
         </div>
       )}
     </div>
-  )
+  );
 }

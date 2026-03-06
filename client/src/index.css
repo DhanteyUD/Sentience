@@ -1,9 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-display: 'Syne', sans-serif;
   --font-mono: 'Space Mono', monospace;
+}
+
+:root {
+  --bg:           #030712;
+  --surface:      #0d1117;
+  --surface2:     #161b22;
+  --border:       rgba(255,255,255,0.07);
+  --border-bright:rgba(255,255,255,0.15);
+  --cyan:         #00d4ff;
+  --orange:       #ff6b35;
+  --green:        #39ff14;
+  --yellow:       #ffd93d;
+  --purple:       #c77dff;
+  --red:          #ff3366;
+  --text:         #e6edf3;
+  --muted:        #8b949e;
 }
 
 body {
@@ -24,3 +40,18 @@ body {
 .scrollbar-thumb-white\/10::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
 
 * { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent; }
+
+.scanline-bg {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 212, 255, 0.018) 2px,
+    rgba(0, 212, 255, 0.018) 4px
+  );
+}
+
+@keyframes pulse-logo {
+  0%, 100% { filter: drop-shadow(0 0 0px rgba(0,212,255,0.4)); }
+  50%       { filter: drop-shadow(0 0 8px rgba(0,212,255,0.6)); }
+}
