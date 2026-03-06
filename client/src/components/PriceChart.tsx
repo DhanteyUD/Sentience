@@ -19,7 +19,7 @@ export function PriceChart({ history }: PriceChartProps) {
           <span className="text-cyan-400">◇</span> SOL PRICE (SIMULATED)
         </span>
         <span
-          className={`font-mono text-[11px] font-bold ${isUp ? "text-cyan-400" : "text-rose-400"}`}
+          className={`font-mono text-[11px] font-bold ${isUp ? "text-[#39ff14]" : "text-rose-400"}`}
         >
           {isUp ? "+" : ""}
           {change.toFixed(2)}%

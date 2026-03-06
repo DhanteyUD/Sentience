@@ -120,6 +120,7 @@ export default function App() {
                 history={priceHistory}
               />
             </motion.div>
+
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
@@ -130,12 +131,13 @@ export default function App() {
                 <span className={SECTION_TITLE}>
                   <span className="text-cyan-400">💳</span> Wallet Registry
                 </span>
-                <span className="font-mono text-[10px] text-zinc-500">
+                <span className="font-mono text-[10px] text-zinc-400">
                   {state?.agents.length ?? 0} wallets
                 </span>
               </div>
               <WalletTable agents={state?.agents ?? []} />
             </motion.div>
+
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
