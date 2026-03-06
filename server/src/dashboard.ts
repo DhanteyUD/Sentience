@@ -692,13 +692,16 @@ const wss = new WebSocketServer({ server });
 
 app.use(express.json());
 app.use(
-    cors({
-        origin:
-            process.env.NODE_ENV === "production"
-                ? false
-                : ["http://localhost:5173", "http://127.0.0.1:5173"],
-        methods: ["GET", "POST"],
-    }),
+  cors({
+    origin:
+      process.env.NODE_ENV === "production"
+        ? [
+            process.env.CLIENT_URL || "https://sentience.vercel.app",
+            /\.vercel\.app$/,
+          ]
+        : ["http://localhost:5173", "http://127.0.0.1:5173"],
+    methods: ["GET", "POST"],
+  }),
 );
 
 app.get("/api/state", (_req, res) => {

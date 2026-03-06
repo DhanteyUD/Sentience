@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import type { SystemState, FeedItem } from "../types";
 
+const API_BASE = import.meta.env.VITE_API_URL || "";
+
 export function useWebSocket() {
   const [state, setState] = useState<SystemState | null>(null);
   const [connected, setConnected] = useState(false);
@@ -13,11 +15,17 @@ export function useWebSocket() {
     let retryTimeout: ReturnType<typeof setTimeout>;
 
     function connect() {
-      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const host = window.location.host;
-      const wsUrl = import.meta.env.DEV
-        ? `${protocol}//${host}/ws`
-        : `${protocol}//${host}`;
+      let wsUrl: string;
+
+      if (import.meta.env.DEV) {
+        const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+        wsUrl = `${protocol}//${window.location.host}/ws`;
+      } else {
+        const base = API_BASE || window.location.origin;
+        const wsProtocol = base.startsWith("https") ? "wss:" : "ws:";
+        const wsHost = base.replace(/^https?:\/\//, "");
+        wsUrl = `${wsProtocol}//${wsHost}`;
+      }
 
       const ws = new WebSocket(wsUrl);
 
@@ -85,11 +93,11 @@ export function useWebSocket() {
     id: string,
     action: "pause" | "resume" | "stop",
   ) => {
-    await fetch(`/api/agents/${id}/${action}`, { method: "POST" });
+    await fetch(`${API_BASE}/api/agents/${id}/${action}`, { method: "POST" });
   };
 
   const spawnAgent = async (name: string, type: string, strategy: string) => {
-    await fetch("/api/agents/spawn", {
+    await fetch(`${API_BASE}/api/agents/spawn`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, type, strategy }),
