@@ -18,7 +18,7 @@ No keys are reused across agents. No keys are derived from a master seed. Each a
 
 Immediately after generation, the private key is encrypted before touching disk:
 
-```
+```text
 Input:  64-byte Ed25519 secret key
         User-provided password (or env WALLET_ENCRYPTION_KEY)
 
@@ -48,7 +48,7 @@ The private key exists in plaintext **only in memory** during generation and dur
 
 When an agent needs to sign a transaction:
 
-```
+```text
 Step 1: Read keystore JSON from disk
 Step 2: Parse IV from stored hex string
 Step 3: Re-derive AES key via PBKDF2 (same password + IV + 10k iterations)
@@ -73,7 +73,7 @@ When an agent is removed:
 ### What We Defend Against
 
 | Threat | Mitigation |
-|--------|-----------|
+| --- | --- |
 | **Disk theft** | Private keys encrypted with AES-256-CBC; attacker needs password |
 | **Brute-force on password** | PBKDF2 with 10,000 iterations makes each guess computationally expensive |
 | **Cross-agent compromise** | Each agent has its own keypair; no shared secrets |
@@ -82,8 +82,6 @@ When an agent is removed:
 | **Memory dump** | Out of scope for prototype; production would use HSM/enclave |
 
 ### Known Limitations (Prototype)
-
-These are acknowledged tradeoffs for a hackathon prototype:
 
 1. **Password in environment variable** — In production, use a secrets manager (HashiCorp Vault, AWS KMS, or Turnkey as referenced in Solana's Kora docs)
 2. **PBKDF2 iteration count** — 10,000 is the minimum recommended; production should use 600,000+ or switch to Argon2id
@@ -117,7 +115,7 @@ Each agent only has access to its own wallet. The orchestrator can coordinate ag
 ## Comparison with Existing Approaches
 
 | Approach | Key Storage | Signing | Agent-Compatible |
-|----------|-----------|---------|-----------------|
+| --- | --- | --- | --- |
 | **Browser wallet (Phantom)** | Encrypted in browser | User-approved popups | No — requires human |
 | **Custodial (Coinbase)** | Server-side HSM | API call to custodian | Partially — API-dependent |
 | **MPC (Turnkey/Fireblocks)** | Distributed key shares | Threshold signatures | Yes — but complex setup |
