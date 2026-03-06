@@ -94,7 +94,9 @@ export function SpawnModal({ open, onClose, onSpawn }: SpawnModalProps) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-          onClick={() => { if (!loading) onClose(); }}
+          onClick={() => {
+            if (!loading) onClose();
+          }}
         >
           <motion.div
             initial={{ scale: 0.95, opacity: 0, y: 10 }}
@@ -104,7 +106,6 @@ export function SpawnModal({ open, onClose, onSpawn }: SpawnModalProps) {
             className="relative w-105 bg-[#0d1117] border border-white/15 rounded-2xl p-7 shadow-2xl scanline-bg border-t-2 border-t-cyan-500/50"
             onClick={(e) => e.stopPropagation()}
           >
-
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="font-black text-white font-display">
@@ -119,7 +120,7 @@ export function SpawnModal({ open, onClose, onSpawn }: SpawnModalProps) {
                 disabled={loading}
                 className="text-zinc-500 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                <X size={18} />
+                <X size={18} className="cursor-pointer" />
               </button>
             </div>
 
@@ -140,7 +141,9 @@ export function SpawnModal({ open, onClose, onSpawn }: SpawnModalProps) {
                   styles={selectStyles}
                   options={typeOptions}
                   value={typeOptions.find((o) => o.value === type)}
-                  onChange={(opt) => setType((opt as Option)?.value ?? "TRADING")}
+                  onChange={(opt) =>
+                    setType((opt as Option)?.value ?? "TRADING")
+                  }
                   isSearchable={false}
                 />
               </div>
@@ -151,7 +154,9 @@ export function SpawnModal({ open, onClose, onSpawn }: SpawnModalProps) {
                   styles={selectStyles}
                   options={strategyOptions}
                   value={strategyOptions.find((o) => o.value === strategy)}
-                  onChange={(opt) => setStrategy((opt as Option)?.value ?? "DCA")}
+                  onChange={(opt) =>
+                    setStrategy((opt as Option)?.value ?? "DCA")
+                  }
                   isSearchable={false}
                 />
               </div>
@@ -161,14 +166,14 @@ export function SpawnModal({ open, onClose, onSpawn }: SpawnModalProps) {
               <button
                 onClick={onClose}
                 disabled={loading}
-                className="px-4 py-2.5 text-sm font-mono text-zinc-400 border border-white/10 rounded-lg hover:border-white/20 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-4 py-2.5 text-sm font-mono text-zinc-400 cursor-pointer border border-white/10 rounded-lg hover:border-white/20 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="flex-1 py-2.5 text-sm font-mono font-bold bg-cyan-400 text-[#030712] rounded-lg hover:bg-cyan-300 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 py-2.5 text-sm font-mono font-bold bg-cyan-400 cursor-pointer text-[#030712] rounded-lg hover:bg-cyan-300 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
