@@ -10,24 +10,53 @@
 
 ---
 
-## What is Sentience?
+## Table of Contents
+
+- [Overview](#overview)
+- [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
+- [Agent Types](#agent-types)
+- [Quick Start](#quick-start)
+- [What Happens On-Chain](#what-happens-on-chain)
+- [Dashboard](#dashboard)
+- [API Reference](#api-reference)
+- [Security Model](#security-model)
+- [Design Decisions](#design-decisions)
+- [License](#license)
+
+---
+
+## Overview
 
 Sentience is a prototype **agentic wallet system** for Solana. Each AI agent gets its own isolated, encrypted wallet and can autonomously:
 
-- **Creates real Ed25519 keypairs** — encrypted at rest with AES-256-CBC + PBKDF2
-- **Signs real transactions** — autonomous SOL transfers on Solana devnet, no human approval
-- **Holds real SOL** — balances funded via devnet airdrop, queryable via RPC
-- **Interacts with Jupiter V6** — real DEX quotes for `SOL → USDC` pricing
-- **Monitors risk** — multi-factor portfolio scoring with real balance and network data
-- **Coordinates** — multi-agent orchestration with event-driven communication
+- **Create real Ed25519 keypairs** — encrypted at rest with AES-256-CBC + PBKDF2
+- **Sign real transactions** — autonomous SOL transfers on Solana devnet, no human approval
+- **Hold real SOL** — balances funded via devnet airdrop, queryable via RPC
+- **Interact with Jupiter V6** — real DEX quotes for `SOL → USDC` pricing
+- **Monitor risk** — multi-factor portfolio scoring with real balance and network data
+- **Coordinate** — multi-agent orchestration with event-driven communication
 
 **Every wallet address and transaction is verifiable on [Solana Explorer (devnet)](https://explorer.solana.com/?cluster=devnet).**
 
 ---
 
+## Tech Stack
+
+| Layer      | Technology                                                               |
+|------------|--------------------------------------------------------------------------|
+| Frontend   | React 19, TypeScript, Vite 7, Tailwind CSS v4, Framer Motion, Recharts   |
+| Backend    | Node.js, Express, WebSocket (ws), ts-node                                |
+| Blockchain | @solana/web3.js, @solana/spl-token                                       |
+| Encryption | AES-256-CBC, PBKDF2 (crypto-js)                                          |
+| DEX        | Jupiter V6 Quote API                                                     |
+| Network    | Solana Devnet                                                            |
+
+---
+
 ## Architecture
 
-```js
+```text
 sentience/
 ├── client/                                React + Vite + Tailwind (real-time dashboard)
 │   ├── src/
@@ -35,7 +64,7 @@ sentience/
 │   │   ├── hooks/                         useWebSocket (live state updates)
 │   │   ├── lib/                           Utilities, config maps
 │   │   └── types/                         TypeScript interfaces
-│   └── vite.config.ts                     Dev proxy → localhost:3000, port:5173
+│   └── vite.config.ts                     Dev proxy → localhost:3000, port: 5173
 │
 ├── server/                                TypeScript + Node.js (agent runtime)
 │   ├── dashboard/
@@ -66,6 +95,40 @@ sentience/
 
 ---
 
+## Agent Types
+
+### TradingAgent
+
+Executes buy/sell decisions based on configurable strategies:
+
+| Strategy        | Logic                                                       |
+|-----------------|-------------------------------------------------------------|
+| **DCA**         | Buys at regular intervals regardless of price               |
+| **MOMENTUM**    | Buys if price rising (+0.5%), sells if falling (-0.5%)      |
+| **MEAN_REVERT** | Buys below moving average (-1%), sells above (+1%)          |
+| **RANDOM**      | Random position changes (testing/benchmarking)              |
+
+### LiquidityAgent
+
+Autonomous LP management:
+
+- Adds liquidity when balance exceeds 3× threshold
+- Harvests accumulated fees when > 0.1 USDC
+- Rebalances when pool ratio drifts > 15% from 50/50
+- Emergency withdrawal when balance drops below threshold
+
+### MonitorAgent
+
+Portfolio risk monitoring with multi-factor scoring:
+
+- **Balance level** — critically low balance triggers alerts
+- **Volatility** — tracks 3-cycle rolling window
+- **Network conditions** — simulated congestion detection
+- **Anomaly detection** — unusual transaction pattern flagging
+- Emits `alert` events that other agents can subscribe to
+
+---
+
 ## Quick Start
 
 ### Prerequisites
@@ -73,7 +136,7 @@ sentience/
 - Node.js ≥ 18
 - npm ≥ 8
 
-### 1. Install all dependencies
+### 1. Install dependencies
 
 ```bash
 npm run install:all
@@ -90,7 +153,7 @@ cp server/.env.example server/.env
 #   NODE_ENV=production
 ```
 
-### 3. Run (both client + server)
+### 3. Start the app
 
 ```bash
 npm run dev
@@ -114,15 +177,15 @@ npm start                 # Production build with real devnet
 
 ## What Happens On-Chain
 
-| Step | Operation | Devnet Call |
-| --- | --- | --- |
-| 1 | Agent wallets created | `Keypair.generate()` → Ed25519 |
-| 2 | Private keys encrypted | AES-256-CBC + PBKDF2 → `.keystore/` |
-| 3 | Agents funded | `connection.requestAirdrop()` |
-| 4 | Balances queried | `connection.getBalance()` |
-| 5 | Agents transfer SOL | `SystemProgram.transfer` → signed & broadcast |
-| 6 | Monitor checks health | `connection.getSlot()` → real latency |
-| 7 | Price from Jupiter | `quote-api.jup.ag/v6/quote` → `1 SOL → USDC` |
+| Step | Operation              | Devnet Call                                      |
+|------|------------------------|--------------------------------------------------|
+| 1    | Agent wallets created  | `Keypair.generate()` → Ed25519                   |
+| 2    | Private keys encrypted | AES-256-CBC + PBKDF2 → `.keystore/`              |
+| 3    | Agents funded          | `connection.requestAirdrop()`                    |
+| 4    | Balances queried       | `connection.getBalance()`                        |
+| 5    | Agents transfer SOL    | `SystemProgram.transfer` → signed & broadcast    |
+| 6    | Monitor checks health  | `connection.getSlot()` → real latency            |
+| 7    | Price from Jupiter     | `quote-api.jup.ag/v6/quote` → `1 SOL → USDC`    |
 
 The private key **never** exists in plaintext on disk. It's encrypted immediately after generation and only decrypted in-memory for signing operations.
 
@@ -145,45 +208,45 @@ The React dashboard connects via WebSocket for real-time updates:
 
 ### Core
 
-| Endpoint            | Method | Description                      |
-|---------------------|--------|----------------------------------|
-| `/api/state`        | GET    | Full system state                |
-| `/api/health`       | GET    | Health check with cluster info   |
+| Endpoint      | Method | Description                    |
+|---------------|--------|--------------------------------|
+| `/api/state`  | GET    | Full system state              |
+| `/api/health` | GET    | Health check with cluster info |
 
 ### Agent Control
 
-| Endpoint                  | Method | Description                            |
-|---------------------------|--------|----------------------------------------|
-| `/api/agents/spawn`       | POST   | Deploy new agent with real wallet + airdrop |
-| `/api/agents/:id/pause`   | POST   | Pause agent                            |
-| `/api/agents/:id/resume`  | POST   | Resume agent                           |
-| `/api/agents/:id/stop`    | POST   | Stop agent                             |
+| Endpoint                  | Method | Description                                  |
+|---------------------------|--------|----------------------------------------------|
+| `/api/agents/spawn`       | POST   | Deploy new agent with real wallet + airdrop  |
+| `/api/agents/:id/pause`   | POST   | Pause agent                                  |
+| `/api/agents/:id/resume`  | POST   | Resume agent                                 |
+| `/api/agents/:id/stop`    | POST   | Stop agent                                   |
 
 ### Devnet Operations
 
-| Endpoint                    | Method | Description                              |
-|-----------------------------|--------|------------------------------------------|
-| `/api/agents/:id/airdrop`   | POST   | Request devnet SOL                       |
-| `/api/agents/:id/transfer`  | POST   | Real SOL transfer between agents         |
-| `/api/agents/:id/explorer`  | GET    | Explorer URLs for wallet + transactions  |
-| `/api/jupiter/quote`        | GET    | Real Jupiter V6 SOL→USDC quote           |
+| Endpoint                   | Method | Description                              |
+|----------------------------|--------|------------------------------------------|
+| `/api/agents/:id/airdrop`  | POST   | Request devnet SOL                       |
+| `/api/agents/:id/transfer` | POST   | Real SOL transfer between agents         |
+| `/api/agents/:id/explorer` | GET    | Explorer URLs for wallet + transactions  |
+| `/api/jupiter/quote`       | GET    | Real Jupiter V6 SOL → USDC quote         |
 
 ### WebSocket
 
-`/ws` — `STATE_UPDATE` every 5s with real balances and agent actions.
+`/ws` — emits `STATE_UPDATE` every 5s with real balances and agent actions.
 
 ---
 
 ## Security Model
 
-| Layer | Implementation |
-| ----- | --------------- |
-| Key Generation | `Keypair.generate()` — Ed25519 |
-| Encryption | AES-256-CBC (private key never stored in plaintext) |
-| Key Derivation | PBKDF2, 10,000 iterations |
-| Storage | `.keystore/{uuid}.json`, mode 0600 |
-| Isolation | One keypair per agent, no shared secrets |
-| Signing | `transaction.sign(keypair)` — fully autonomous |
+| Layer           | Implementation                                              |
+|-----------------|-------------------------------------------------------------|
+| Key Generation  | `Keypair.generate()` — Ed25519                              |
+| Encryption      | AES-256-CBC (private key never stored in plaintext)         |
+| Key Derivation  | PBKDF2, 10,000 iterations                                   |
+| Storage         | `.keystore/{uuid}.json`, mode 0600                          |
+| Isolation       | One keypair per agent, no shared secrets                    |
+| Signing         | `transaction.sign(keypair)` — fully autonomous              |
 
 See [SECURITY.md](./SECURITY.md) for the full deep dive.
 
@@ -198,53 +261,6 @@ See [SECURITY.md](./SECURITY.md) for the full deep dive.
 **5-second tick interval** — keeps RPC calls under devnet rate limits while showing real-time activity.
 
 **Simulation fallback** — `npm run dev:server:sim` works without devnet. Primary mode is always real.
-
----
-
-## Agent Types
-
-### TradingAgent
-
-Executes buy/sell decisions based on configurable strategies:
-
-| Strategy | Logic |
-| --------- | ------- |
-| **DCA** | Buys at regular intervals regardless of price |
-| **MOMENTUM** | Buys if price rising (+0.5%), sells if falling (-0.5%) |
-| **MEAN_REVERT** | Buys below moving average (-1%), sells above (+1%) |
-| **RANDOM** | Random position changes (testing/benchmarking) |
-
-### LiquidityAgent
-
-Autonomous LP management:
-
-- Adds liquidity when balance exceeds 3× threshold
-- Harvests accumulated fees when > 0.1 USDC
-- Rebalances when pool ratio drifts > 15% from 50/50
-- Emergency withdrawal when balance drops below threshold
-
-### MonitorAgent
-
-Portfolio risk monitoring with multi-factor scoring:
-
-- **Balance level** — critically low triggers alerts
-- **Volatility** — tracks 3-cycle rolling window
-- **Network conditions** — simulated congestion detection
-- **Anomaly detection** — unusual transaction pattern flagging
-- Emits `alert` events that other agents can subscribe to
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-| ------- | ----------- |
-| Frontend | React 19, TypeScript, Vite 7, Tailwind CSS v4, Framer Motion, Recharts |
-| Backend | Node.js, Express, WebSocket (ws), ts-node |
-| Blockchain | @solana/web3.js, @solana/spl-token |
-| Encryption | AES-256-CBC, PBKDF2 (crypto-js) |
-| DEX | Jupiter V6 Quote API |
-| Network | Solana Devnet |
 
 ---
 
