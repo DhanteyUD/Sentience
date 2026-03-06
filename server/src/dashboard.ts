@@ -18,6 +18,7 @@ import {
     encryptPrivateKey,
     decryptPrivateKey,
     saveKeystore,
+    listKeystores,
     ensureKeystoreDir,
 } from "./utils/encryption";
 import { logger } from "./utils/logger";
@@ -40,6 +41,24 @@ interface LiveWallet {
 }
 
 function createLiveWallet(agentName: string): LiveWallet {
+    try {
+        const existing = listKeystores().find((k) => k.agentName === agentName);
+        if (existing) {
+            const secretKey = decryptPrivateKey(
+                existing.encryptedPrivateKey,
+                existing.iv,
+                ENCRYPTION_PASSWORD,
+            );
+            const keypair = Keypair.fromSecretKey(secretKey);
+            logger.wallet(
+                `Restored wallet for "${agentName}" → ${existing.publicKey}`,
+            );
+            return { id: existing.id, keypair, publicKey: existing.publicKey };
+        }
+    } catch (e: any) {
+        logger.warn(`Keystore restore failed for "${agentName}" (creating new): ${e.message}`);
+    }
+
     const keypair = Keypair.generate();
     const id = uuidv4();
 
@@ -669,7 +688,7 @@ function broadcastState(): void {
 
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocketServer({ server, handleProtocols: () => false });
+const wss = new WebSocketServer({ server });
 
 app.use(express.json());
 app.use(
