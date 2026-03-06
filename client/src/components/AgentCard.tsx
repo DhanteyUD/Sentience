@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ExternalLink, Loader2, Pause, Play, Square } from "lucide-react";
+import { Check, Copy, ExternalLink, Loader2, Pause, Play, Square } from "lucide-react";
 import { useState } from "react";
 import type { Agent } from "../types";
 import {
@@ -22,6 +22,13 @@ export function AgentCard({ agent, index, onControl }: AgentCardProps) {
   const [loadingAction, setLoadingAction] = useState<
     "pause" | "resume" | "stop" | null
   >(null);
+  const [copied, setCopied] = useState(false);
+
+  function copyWallet() {
+    navigator.clipboard.writeText(agent.wallet);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
 
   async function handleControl(action: "pause" | "resume" | "stop") {
     setLoadingAction(action);
@@ -62,7 +69,7 @@ export function AgentCard({ agent, index, onControl }: AgentCardProps) {
       <div className="flex items-start justify-between mb-3 pl-2">
         <div>
           <div className="text-sm font-bold text-white">{agent.name}</div>
-          <div className="text-[10px] font-mono text-zinc-400 mt-0.5">
+          <div className="text-[10px] font-mono text-zinc-300 mt-0.5">
             {agent.type} · {agent.strategy}
           </div>
         </div>
@@ -74,8 +81,16 @@ export function AgentCard({ agent, index, onControl }: AgentCardProps) {
       </div>
 
       {/* Wallet address */}
-      <div className="font-mono text-[9px] text-(--muted) mb-3 pl-2 truncate">
-        {agent.wallet}
+      <div className="flex items-center gap-1.5 mb-3 pl-2">
+        <span className="font-mono text-[9px] text-zinc-300 truncate">
+          {agent.wallet}
+        </span>
+        <button
+          onClick={copyWallet}
+          className="shrink-0 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+        >
+          {copied ? <Check size={10} className="text-[#39ff14]" /> : <Copy size={10} />}
+        </button>
       </div>
 
       {/* Stats */}

@@ -3,7 +3,7 @@ const INFO_ROWS = [
   { label: "Encryption", value: "AES-256-CBC", color: "text-[#39ff14]" },
   {
     label: "Key Derivation",
-    value: "PBKDF2 (10k iter)",
+    value: "PBKDF2 (10k iterations)",
     color: "text-[#39ff14]",
   },
   { label: "Signing", value: "Ed25519 Auto", color: "text-white" },
