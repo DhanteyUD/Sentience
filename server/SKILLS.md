@@ -186,7 +186,7 @@ orch.count                   // Number of agents
 ## Security Model
 
 | Layer | Mechanism | Detail |
-|-------|-----------|--------|
+| ------- | ----------- | ------ |
 | Key Generation | Ed25519 | Solana-native, 32-byte private key |
 | Encryption | AES-256-CBC | 256-bit symmetric encryption |
 | Key Derivation | PBKDF2 | 10,000 iterations, random 16-byte salt (IV) |
