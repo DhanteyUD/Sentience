@@ -7,7 +7,8 @@
     "start": "ts-node src/index.ts",
     "demo": "ts-node src/demo.ts",
     "test": "ts-node src/test-suite.ts",
-    "dashboard": "node dashboard/server.js"
+    "dashboard": "ts-node src/dashboard.ts",
+    "dashboard:sim": "node dashboard/server.js"
   },
   "dependencies": {
     "@solana/spl-token": "^0.4.9",
@@ -25,6 +26,7 @@
     "ws": "^8.18.0"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
     "@types/crypto-js": "^4.2.2",
     "@types/express": "^5.0.0",
     "@types/node": "^22.0.0",
