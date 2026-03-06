@@ -2,64 +2,130 @@
 
 > **Hackathon Submission**: A full-stack system where AI agents autonomously create, manage, and transact from their own encrypted Solana wallets — no human in the loop.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Solana-Devnet-cyan?style=flat-square" />
-  <img src="https://img.shields.io/badge/Encryption-AES--256--CBC-green?style=flat-square" />
-  <img src="https://img.shields.io/badge/Key%20Derivation-PBKDF2-green?style=flat-square" />
-  <img src="https://img.shields.io/badge/Signing-Ed25519-blue?style=flat-square" />
-  <img src="https://img.shields.io/badge/DEX-Jupiter%20V6-violet?style=flat-square" />
-</p>
+![Solana Devnet](https://img.shields.io/badge/Solana-Devnet-cyan?style=flat-square)
+![Encryption AES-256-CBC](https://img.shields.io/badge/Encryption-AES--256--CBC-green?style=flat-square)
+![Key Derivation PBKDF2](https://img.shields.io/badge/Key%20Derivation-PBKDF2-green?style=flat-square)
+![Signing Ed25519](https://img.shields.io/badge/Signing-Ed25519-blue?style=flat-square)
+![DEX Jupiter V6](https://img.shields.io/badge/DEX-Jupiter%20V6-violet?style=flat-square)
 
 ---
 
-## What is Sentience?
+## Table of Contents
+
+- [Overview](#overview)
+- [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
+- [Agent Types](#agent-types)
+- [Quick Start](#quick-start)
+- [What Happens On-Chain](#what-happens-on-chain)
+- [Dashboard](#dashboard)
+- [API Reference](#api-reference)
+- [Security Model](#security-model)
+- [Design Decisions](#design-decisions)
+- [License](#license)
+
+---
+
+## Overview
 
 Sentience is a prototype **agentic wallet system** for Solana. Each AI agent gets its own isolated, encrypted wallet and can autonomously:
 
-- **Create keypairs** — Ed25519 key generation with encrypted-at-rest storage
-- **Sign transactions** — autonomous SOL and SPL token transfers without human approval
-- **Interact with DeFi** — Jupiter V6 quotes and swaps, LP provisioning
-- **Monitor risk** — real-time portfolio risk scoring and alerting
+- **Create real Ed25519 keypairs** — encrypted at rest with AES-256-CBC + PBKDF2
+- **Sign real transactions** — autonomous SOL transfers on Solana devnet, no human approval
+- **Hold real SOL** — balances funded via devnet airdrop, queryable via RPC
+- **Interact with Jupiter V6** — real DEX quotes for `SOL → USDC` pricing
+- **Monitor risk** — multi-factor portfolio scoring with real balance and network data
 - **Coordinate** — multi-agent orchestration with event-driven communication
 
-The system demonstrates the core primitive needed for AI × crypto: **programmatic wallets that agents control end-to-end**.
+**Every wallet address and transaction is verifiable on [Solana Explorer (devnet)](https://explorer.solana.com/?cluster=devnet).**
+
+---
+
+## Tech Stack
+
+| Layer      | Technology                                                               |
+|------------|--------------------------------------------------------------------------|
+| Frontend   | React 19, TypeScript, Vite 7, Tailwind CSS v4, Framer Motion, Recharts   |
+| Backend    | Node.js, Express, WebSocket (ws), ts-node                                |
+| Blockchain | @solana/web3.js, @solana/spl-token                                       |
+| Encryption | AES-256-CBC, PBKDF2 (crypto-js)                                          |
+| DEX        | Jupiter V6 Quote API                                                     |
+| Network    | Solana Devnet                                                            |
 
 ---
 
 ## Architecture
 
-```
+```text
 sentience/
-├── client/                  React + Vite + Tailwind (real-time dashboard)
+├── client/                                React + Vite + Tailwind (real-time dashboard)
 │   ├── src/
-│   │   ├── components/      AgentCard, PriceChart, ActivityFeed, etc.
-│   │   ├── hooks/           useWebSocket (live state updates)
-│   │   ├── lib/             Utilities, config maps
-│   │   └── types/           TypeScript interfaces
-│   └── vite.config.ts       Dev proxy → localhost:3000
+│   │   ├── components/                    AgentCard, PriceChart, ActivityFeed, etc.
+│   │   ├── hooks/                         useWebSocket (live state updates)
+│   │   ├── lib/                           Utilities, config maps
+│   │   └── types/                         TypeScript interfaces
+│   └── vite.config.ts                     Dev proxy → localhost:3000, port: 5173
 │
-├── server/                  TypeScript + Node.js (agent runtime)
-│   ├── src/
-│   │   ├── wallet/
-│   │   │   ├── AgentWallet.ts      Core: create, sign, send, load
-│   │   │   └── WalletManager.ts    Multi-wallet registry
-│   │   ├── agent/
-│   │   │   ├── BaseAgent.ts        Abstract agent with tick loop
-│   │   │   ├── TradingAgent.ts     DCA, Momentum, Mean Reversion
-│   │   │   ├── LiquidityAgent.ts   LP management & rebalancing
-│   │   │   ├── MonitorAgent.ts     Risk scoring & alerts
-│   │   │   └── AgentOrchestrator.ts Spawn, coordinate, lifecycle
-│   │   ├── protocols/
-│   │   │   └── JupiterProtocol.ts  Jupiter V6 quotes + swap execution
-│   │   └── utils/
-│   │       ├── encryption.ts       AES-256-CBC + PBKDF2
-│   │       └── logger.ts           Colored terminal output
+├── server/                                TypeScript + Node.js (agent runtime)
 │   ├── dashboard/
-│   │   └── server.js              Express + WebSocket API
-│   └── SKILLS.md                  Technical capability reference
+│   │   └── server.js                      Simulation fallback (Express + WebSocket)
+│   ├── src/
+│   │   ├── agent/
+│   │   │   ├── AgentOrchestrator.ts       Spawn & lifecycle management
+│   │   │   ├── BaseAgent.ts               Abstract agent with tick loop
+│   │   │   ├── LiquidityAgent.ts          LP management & rebalancing
+│   │   │   ├── MonitorAgent.ts            Risk scoring & alerts
+│   │   │   └── TradingAgent.ts            DCA, Momentum, Mean Reversion
+│   │   ├── protocols/
+│   │   │   └── JupiterProtocol.ts         Jupiter V6 quotes + swap execution
+│   │   ├── utils/
+│   │   │   ├── encryption.ts              AES-256-CBC + PBKDF2
+│   │   │   └── logger.ts                  Colored terminal output
+│   │   ├── wallet/
+│   │   │   ├── AgentWallet.ts             Core: create, sign, send, load
+│   │   │   └── WalletManager.ts           Multi-wallet registry
+│   │   └── dashboard.ts                 ★ Real devnet server (Express + WebSocket)
+│   │
+│   └── SKILLS.md                          Agent capability reference
 │
-└── package.json             Root: runs everything together
+├── SECURITY.md                            Security deep dive & threat model
+│
+└── package.json                           Root: runs everything together
 ```
+
+---
+
+## Agent Types
+
+### TradingAgent
+
+Executes buy/sell decisions based on configurable strategies:
+
+| Strategy        | Logic                                                       |
+|-----------------|-------------------------------------------------------------|
+| **DCA**         | Buys at regular intervals regardless of price               |
+| **MOMENTUM**    | Buys if price rising (+0.5%), sells if falling (-0.5%)      |
+| **MEAN_REVERT** | Buys below moving average (-1%), sells above (+1%)          |
+| **RANDOM**      | Random position changes (testing/benchmarking)              |
+
+### LiquidityAgent
+
+Autonomous LP management:
+
+- Adds liquidity when balance exceeds 3× threshold
+- Harvests accumulated fees when > 0.1 USDC
+- Rebalances when pool ratio drifts > 15% from 50/50
+- Emergency withdrawal when balance drops below threshold
+
+### MonitorAgent
+
+Portfolio risk monitoring with multi-factor scoring:
+
+- **Balance level** — critically low balance triggers alerts
+- **Volatility** — tracks 3-cycle rolling window
+- **Network conditions** — simulated congestion detection
+- **Anomaly detection** — unusual transaction pattern flagging
+- Emits `alert` events that other agents can subscribe to
 
 ---
 
@@ -70,7 +136,7 @@ sentience/
 - Node.js ≥ 18
 - npm ≥ 8
 
-### 1. Install all dependencies
+### 1. Install dependencies
 
 ```bash
 npm run install:all
@@ -84,116 +150,44 @@ cp server/.env.example server/.env
 #   WALLET_ENCRYPTION_KEY=your-strong-password
 #   SOLANA_CLUSTER=devnet
 #   PORT=3000
+#   NODE_ENV=production
 ```
 
-### 3. Run in development (both client + server)
+### 3. Start the app
 
 ```bash
 npm run dev
 ```
 
 - **API + WebSocket** → `http://localhost:3000`
-- **React Dashboard** → `http://localhost:5173` ← open this
+- **React Dashboard** → `http://localhost:5173` ← open this in browser
 
-### 4. Run the agent demo (CLI)
+On startup the server creates **real keypairs**, requests **devnet airdrops**, and starts agents that execute **real signed SOL transfers**. Click any wallet address in the dashboard to verify on Solana Explorer.
 
-```bash
-npm run demo
-```
-
-Spawns 4 agents, funds them via devnet airdrop, runs autonomous trading for 30 seconds, and prints a system report.
-
-### 5. Run the test suite
+### 4. Other commands
 
 ```bash
-npm test
+npm run demo              # CLI: spawn → fund → trade → report (30s)
+npm test                  # Full test suite
+npm run dev:server:sim    # Simulation fallback (no devnet needed)
+npm start                 # Production build with real devnet
 ```
-
-### 6. Production build
-
-```bash
-npm start
-```
-
-Builds React and serves everything from `http://localhost:3000`.
 
 ---
 
-## Design Decisions
+## What Happens On-Chain
 
-### Security — Why This Approach
-
-| Layer | Implementation | Rationale |
-|-------|---------------|-----------|
-| **Key Generation** | `Keypair.generate()` via `@solana/web3.js` | Standard Ed25519, same as all Solana wallets |
-| **Key Encryption** | AES-256-CBC | Industry standard symmetric encryption |
-| **Key Derivation** | PBKDF2 with 10,000 iterations | Prevents brute-force attacks on encryption password |
-| **Storage** | JSON keystores at `.keystore/`, mode 0600 | File-level isolation, restricted permissions |
-| **Key Isolation** | One keypair per agent, never shared | Compromise of one agent doesn't affect others |
-| **Signing** | Ed25519 via `@solana/web3.js` internals | Standard Solana signature scheme |
+| Step | Operation              | Devnet Call                                     |
+|------|------------------------|-------------------------------------------------|
+| 1    | Agent wallets created  | `Keypair.generate()` → Ed25519                  |
+| 2    | Private keys encrypted | AES-256-CBC + PBKDF2 → `.keystore/`             |
+| 3    | Agents funded          | `connection.requestAirdrop()`                   |
+| 4    | Balances queried       | `connection.getBalance()`                       |
+| 5    | Agents transfer SOL    | `SystemProgram.transfer` → signed & broadcast   |
+| 6    | Monitor checks health  | `connection.getSlot()` → real latency           |
+| 7    | Price from Jupiter     | `quote-api.jup.ag/v6/quote` → `1 SOL → USDC`    |
 
 The private key **never** exists in plaintext on disk. It's encrypted immediately after generation and only decrypted in-memory for signing operations.
-
-### Separation of Concerns
-
-The wallet and agent layers are completely decoupled:
-
-```
-┌─────────────────────────────┐
-│  Agent Layer (Decision)     │  TradingAgent, LiquidityAgent, MonitorAgent
-│  "What should I do?"        │  Strategy logic, market analysis, risk scoring
-├─────────────────────────────┤
-│  Wallet Layer (Execution)   │  AgentWallet, WalletManager
-│  "How do I do it?"          │  Key management, signing, RPC calls
-├─────────────────────────────┤
-│  Protocol Layer (Interface) │  JupiterProtocol
-│  "What can I interact with?"│  DEX quotes, swap building, route optimization
-└─────────────────────────────┘
-```
-
-An agent never touches cryptographic keys directly. It calls `wallet.sendSOL()` or `wallet.signTransaction()` — the wallet handles key decryption, signing, and broadcasting.
-
-### Scalability
-
-- **AgentOrchestrator** manages N agents from a single entry point
-- Each agent runs on its own tick interval (configurable)
-- Agents communicate via EventEmitter (decoupled, non-blocking)
-- WebSocket broadcasts full system state to all dashboard clients
-- Wallet manager supports loading all keystores from disk on restart
-
----
-
-## Agent Types
-
-### TradingAgent
-
-Executes buy/sell decisions based on configurable strategies:
-
-| Strategy | Logic |
-|----------|-------|
-| **DCA** | Buys at regular intervals regardless of price |
-| **MOMENTUM** | Buys if price rising (+0.5%), sells if falling (-0.5%) |
-| **MEAN_REVERT** | Buys below moving average (-1%), sells above (+1%) |
-| **RANDOM** | Random position changes (testing/benchmarking) |
-
-### LiquidityAgent
-
-Autonomous LP management:
-
-- Adds liquidity when balance exceeds 3× threshold
-- Harvests accumulated fees when > 0.1 USDC
-- Rebalances when pool ratio drifts > 15% from 50/50
-- Emergency withdrawal when balance drops below threshold
-
-### MonitorAgent (DeFiGuard-style)
-
-Portfolio risk monitoring with multi-factor scoring:
-
-- **Balance level** — critically low triggers alerts
-- **Volatility** — tracks 3-cycle rolling window
-- **Network conditions** — simulated congestion detection
-- **Anomaly detection** — unusual transaction pattern flagging
-- Emits `alert` events that other agents can subscribe to
 
 ---
 
@@ -212,45 +206,61 @@ The React dashboard connects via WebSocket for real-time updates:
 
 ## API Reference
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/state` | GET | Full system state snapshot |
-| `/api/health` | GET | Health check with uptime |
-| `/api/agents/:id/pause` | POST | Pause an agent |
-| `/api/agents/:id/resume` | POST | Resume a paused agent |
-| `/api/agents/:id/stop` | POST | Stop an agent |
-| `/api/agents/spawn` | POST | Deploy a new agent |
+### Core
+
+| Endpoint      | Method | Description                    |
+|---------------|--------|--------------------------------|
+| `/api/state`  | GET    | Full system state              |
+| `/api/health` | GET    | Health check with cluster info |
+
+### Agent Control
+
+| Endpoint                  | Method | Description                                  |
+|---------------------------|--------|----------------------------------------------|
+| `/api/agents/spawn`       | POST   | Deploy new agent with real wallet + airdrop  |
+| `/api/agents/:id/pause`   | POST   | Pause agent                                  |
+| `/api/agents/:id/resume`  | POST   | Resume agent                                 |
+| `/api/agents/:id/stop`    | POST   | Stop agent                                   |
+
+### Devnet Operations
+
+| Endpoint                   | Method | Description                              |
+|----------------------------|--------|------------------------------------------|
+| `/api/agents/:id/airdrop`  | POST   | Request devnet SOL                       |
+| `/api/agents/:id/transfer` | POST   | Real SOL transfer between agents         |
+| `/api/agents/:id/explorer` | GET    | Explorer URLs for wallet + transactions  |
+| `/api/jupiter/quote`       | GET    | Real Jupiter V6 SOL → USDC quote         |
 
 ### WebSocket
 
-Connect to `/ws` (dev) or same host (prod) for real-time `STATE_UPDATE` messages every 3 seconds.
+`/ws` — emits `STATE_UPDATE` every 5s with real balances and agent actions.
 
 ---
 
-## Tech Stack
+## Security Model
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 19, TypeScript, Vite 7, Tailwind CSS v4 |
-| Animations | Framer Motion |
-| Charts | Recharts |
-| Backend | Node.js, Express, WebSocket (ws) |
-| Blockchain | @solana/web3.js, @solana/spl-token |
-| Encryption | AES-256-CBC, PBKDF2 (via crypto-js) |
-| DEX | Jupiter V6 API |
-| Network | Solana Devnet |
+| Layer           | Implementation                                              |
+|-----------------|-------------------------------------------------------------|
+| Key Generation  | `Keypair.generate()` — Ed25519                              |
+| Encryption      | AES-256-CBC (private key never stored in plaintext)         |
+| Key Derivation  | PBKDF2, 10,000 iterations                                   |
+| Storage         | `.keystore/{uuid}.json`, mode 0600                          |
+| Isolation       | One keypair per agent, no shared secrets                    |
+| Signing         | `transaction.sign(keypair)` — fully autonomous              |
+
+See [SECURITY.md](./SECURITY.md) for the full deep dive.
 
 ---
 
-## Running on Devnet
+## Design Decisions
 
-All operations target Solana Devnet by default. The demo script:
+**Separate wallet and agent layers** — agents decide *what* to do, wallets handle *how*. An agent calls `wallet.sendSOL()` without touching private keys.
 
-1. Generates real Ed25519 keypairs
-2. Requests SOL from the devnet faucet
-3. Executes real signed transactions (SOL transfers between agents)
-4. Fetches Jupiter V6 quotes (with simulation fallback if API is down)
-5. All transactions are viewable on [Solana Explorer (Devnet)](https://explorer.solana.com/?cluster=devnet)
+**Per-agent keypairs (not HD wallet)** — if one agent is compromised, others are unaffected. No master seed exposure risk.
+
+**5-second tick interval** — keeps RPC calls under devnet rate limits while showing real-time activity.
+
+**Simulation fallback** — `npm run dev:server:sim` works without devnet. Primary mode is always real.
 
 ---
 

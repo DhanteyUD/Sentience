@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { useWebSocket } from "./hooks/useWebSocket";
 import { Header } from "./components/Header";
+import { Stat } from "./components/Stat";
 import { MetricsRow } from "./components/MetricsRow";
 import { AgentCard } from "./components/AgentCard";
 import { ActivityFeed } from "./components/ActivityFeed";
@@ -44,6 +45,7 @@ export default function App() {
 
         <main className="max-w-400 mx-auto px-7 py-6 grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-5">
           <div className="space-y-5">
+            <Stat state={state} />
             <MetricsRow state={state} />
 
             <motion.div
@@ -57,7 +59,7 @@ export default function App() {
                   <span className="text-[#00d4ff] animate-pulse">◈</span>{" "}
                   Autonomous Agents
                   {state && (
-                    <span className="font-mono text-zinc-600 normal-case tracking-normal ml-1">
+                    <span className="hidden md:block font-mono text-zinc-600 normal-case tracking-normal ml-1">
                       (
                       {
                         state.agents.filter((a) => a.status === "running")
@@ -107,7 +109,6 @@ export default function App() {
               </div>
               <ActivityFeed items={feed} />
             </motion.div>
-
           </div>
           <div className="space-y-5">
             <motion.div
@@ -116,9 +117,7 @@ export default function App() {
               transition={{ delay: 0.15 }}
               className={CARD}
             >
-              <PriceChart
-                history={priceHistory}
-              />
+              <PriceChart history={priceHistory} />
             </motion.div>
 
             <motion.div
