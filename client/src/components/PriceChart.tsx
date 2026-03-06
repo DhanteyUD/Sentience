@@ -16,7 +16,7 @@ export function PriceChart({ history }: PriceChartProps) {
     <div>
       <div className="flex items-center justify-between px-4.5 py-3.5 border-b border-(--border)">
         <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-(--muted) flex items-center gap-2">
-          <span className="text-cyan-400">◇</span> SOL PRICE (SIMULATED)
+          <span className="text-cyan-400">◇</span> SOL PRICE (Last 30 mins)
         </span>
         <span
           className={`font-mono text-[11px] font-bold ${isUp ? "text-[#39ff14]" : "text-rose-400"}`}

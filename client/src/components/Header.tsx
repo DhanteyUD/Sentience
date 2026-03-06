@@ -79,7 +79,8 @@ export function Header({ state, connected }: HeaderProps) {
         <span
           className={`w-1.5 h-1.5 rounded-full ${connected ? "bg-[#39ff14] animate-pulse" : "bg-rose-400"}`}
         />
-        {connected ? "SYSTEM ONLINE" : "OFFLINE"}
+        <span className='hidden md:block'>{connected ? "SYSTEM ONLINE" : "OFFLINE"}</span>
+        <span className='md:hidden'>{connected ? "ONLINE" : "OFFLINE"}</span>
       </div>
     </header>
   );
