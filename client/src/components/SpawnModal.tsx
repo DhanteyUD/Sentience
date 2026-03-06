@@ -61,18 +61,24 @@ const selectStyles: StylesConfig<Option> = {
 interface SpawnModalProps {
   open: boolean;
   onClose: () => void;
-  onSpawn: (name: string, type: string, strategy: string) => void;
+  onSpawn: (name: string, type: string, strategy: string) => Promise<void>;
 }
 
 export function SpawnModal({ open, onClose, onSpawn }: SpawnModalProps) {
   const [name, setName] = useState("");
   const [type, setType] = useState("TRADING");
   const [strategy, setStrategy] = useState("DCA");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
-    onSpawn(name || `Agent-${Date.now()}`, type, strategy);
-    setName("");
-    onClose();
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      await onSpawn(name || `Agent-${Date.now()}`, type, strategy);
+      setName("");
+      onClose();
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputClass =
@@ -88,7 +94,7 @@ export function SpawnModal({ open, onClose, onSpawn }: SpawnModalProps) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-          onClick={onClose}
+          onClick={() => { if (!loading) onClose(); }}
         >
           <motion.div
             initial={{ scale: 0.95, opacity: 0, y: 10 }}
@@ -110,7 +116,8 @@ export function SpawnModal({ open, onClose, onSpawn }: SpawnModalProps) {
               </div>
               <button
                 onClick={onClose}
-                className="text-zinc-500 hover:text-white transition-colors"
+                disabled={loading}
+                className="text-zinc-500 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <X size={18} />
               </button>
@@ -153,15 +160,24 @@ export function SpawnModal({ open, onClose, onSpawn }: SpawnModalProps) {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={onClose}
-                className="px-4 py-2.5 text-sm font-mono text-zinc-400 border border-white/10 rounded-lg hover:border-white/20 hover:text-white transition-colors"
+                disabled={loading}
+                className="px-4 py-2.5 text-sm font-mono text-zinc-400 border border-white/10 rounded-lg hover:border-white/20 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmit}
-                className="flex-1 py-2.5 text-sm font-mono font-bold bg-cyan-400 text-[#030712] rounded-lg hover:bg-cyan-300 transition-colors"
+                disabled={loading}
+                className="flex-1 py-2.5 text-sm font-mono font-bold bg-cyan-400 text-[#030712] rounded-lg hover:bg-cyan-300 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                Deploy Agent →
+                {loading ? (
+                  <>
+                    <span className="inline-block w-3.5 h-3.5 border-2 border-[#030712]/30 border-t-[#030712] rounded-full animate-spin" />
+                    Deploying…
+                  </>
+                ) : (
+                  "Deploy Agent →"
+                )}
               </button>
             </div>
           </motion.div>
