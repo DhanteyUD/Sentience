@@ -199,15 +199,15 @@ orch.count                   // Number of agents
 ## Events
 
 ```typescript
-agent.on('started', (state) => {})   // Agent started
-agent.on('stopped', (state) => {})   // Agent stopped
-agent.on('paused',  (state) => {})   // Agent paused
-agent.on('resumed', (state) => {})   // Agent resumed
-agent.on('action',  (log) => {})     // Any autonomous action
-agent.on('alert',   (alert) => {})   // Risk alert (MonitorAgent)
-agent.on('error',   (err) => {})     // Agent error
+agent.on('started', (state) => {})               // Agent started
+agent.on('stopped', (state) => {})               // Agent stopped
+agent.on('paused',  (state) => {})               // Agent paused
+agent.on('resumed', (state) => {})               // Agent resumed
+agent.on('action',  (log) => {})                 // Any autonomous action
+agent.on('alert',   (alert) => {})               // Risk alert (MonitorAgent)
+agent.on('error',   (err) => {})                 // Agent error
 
-orchestrator.on('agentAction', (action) => {})  // Any agent action
+orchestrator.on('agentAction', (action) => {})   // Any agent action
 orchestrator.on('alert', (alert) => {})          // Any agent alert
 ```
 
