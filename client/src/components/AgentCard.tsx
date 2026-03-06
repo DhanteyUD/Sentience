@@ -58,14 +58,12 @@ export function AgentCard({ agent, index, onControl }: AgentCardProps) {
         style={{ background: agent.color }}
       />
 
-      {/* Risk dot */}
       {agent.status === "running" && (
         <div
           className={`absolute top-3 right-3 w-1.5 h-1.5 rounded-full ${risk.dot}`}
         />
       )}
 
-      {/* Top row */}
       <div className="flex items-start justify-between mb-3 pl-2">
         <div>
           <div className="text-sm font-bold text-white">{agent.name}</div>
@@ -80,7 +78,6 @@ export function AgentCard({ agent, index, onControl }: AgentCardProps) {
         </span>
       </div>
 
-      {/* Wallet address */}
       <div className="flex items-center gap-1.5 mb-3 pl-2">
         <span className="font-mono text-[9px] text-zinc-300 truncate">
           {agent.wallet}
@@ -93,7 +90,6 @@ export function AgentCard({ agent, index, onControl }: AgentCardProps) {
         </button>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-3 gap-2 mb-3 pl-2">
         {[
           { val: agent.balanceSOL.toFixed(3), label: "SOL" },
@@ -117,7 +113,6 @@ export function AgentCard({ agent, index, onControl }: AgentCardProps) {
         ))}
       </div>
 
-      {/* Last action */}
       <div className="flex items-center gap-2 pl-2 mb-3">
         <span
           className={`text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded ${actionColor}`}
@@ -129,7 +124,6 @@ export function AgentCard({ agent, index, onControl }: AgentCardProps) {
         </span>
       </div>
 
-      {/* Controls */}
       <div className="flex gap-2 pl-2">
         {agent.status === "running" ? (
           <button
