@@ -1,4 +1,4 @@
-# Sentience — Autonomous AI Agent Wallets for Solana
+# ⬡ Sentience — Autonomous AI Agent Wallets for Solana
 
 > **Hackathon Submission**: A full-stack system where AI agents autonomously create, manage, and transact from their own encrypted Solana wallets — no human in the loop.
 
