@@ -3,6 +3,78 @@ const { WebSocketServer } = require("ws");
 const http = require("http");
 const cors = require("cors");
 const path = require("path");
+const https = require("https");
+
+const priceHistory = [];
+let lastFetchedPrice = null;
+
+function httpsGet(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, { headers: { "User-Agent": "sentience-dashboard/1.0" } }, (res) => {
+      let data = "";
+      res.on("data", (chunk) => (data += chunk));
+      res.on("end", () => {
+        try { resolve(JSON.parse(data)); }
+        catch (e) { reject(e); }
+      });
+    }).on("error", reject);
+  });
+}
+
+async function fetchSolPrice() {
+  try {
+    const data = await httpsGet(
+      "https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd&include_24hr_change=true"
+    );
+    if (data?.solana?.usd) {
+      lastFetchedPrice = { price: data.solana.usd, change24h: data.solana.usd_24h_change ?? 0 };
+      return lastFetchedPrice;
+    }
+  } catch (_) {}
+  return null;
+}
+
+function computeVolatility() {
+  if (priceHistory.length < 3) return 0;
+  const mean = priceHistory.reduce((a, b) => a + b, 0) / priceHistory.length;
+  const variance = priceHistory.reduce((s, p) => s + (p - mean) ** 2, 0) / priceHistory.length;
+  return Math.sqrt(variance);
+}
+
+function computeRiskLevel(agent, solPrice, change24h) {
+  let score = 0;
+
+  const vol = computeVolatility();
+  const volPct = solPrice > 0 ? (vol / solPrice) * 100 : 0;
+  if (volPct > 1.5) score += 35;
+  else if (volPct > 0.8) score += 20;
+  else if (volPct > 0.4) score += 10;
+
+  const absDelta = Math.abs(change24h);
+  if (absDelta > 10) score += 30;
+  else if (absDelta > 5) score += 20;
+  else if (absDelta > 2) score += 10;
+
+  if (priceHistory.length >= 5) {
+    const recent = priceHistory[priceHistory.length - 1];
+    const older  = priceHistory[priceHistory.length - 5];
+    const movePct = Math.abs((recent - older) / older) * 100;
+    if (movePct > 2) score += 25;
+    else if (movePct > 1) score += 15;
+    else if (movePct > 0.5) score += 8;
+  }
+
+  if (agent.balanceSOL < 0.05) score += 30;
+  else if (agent.balanceSOL < 0.15) score += 15;
+
+  if (agent.pnl < -10) score += 20;
+  else if (agent.pnl < -5) score += 10;
+
+  if (score >= 60) return "CRITICAL";
+  if (score >= 40) return "HIGH";
+  if (score >= 20) return "MEDIUM";
+  return "LOW";
+}
 
 const app = express();
 const server = http.createServer(app);
@@ -117,10 +189,23 @@ systemState.agents.forEach((agent) => {
   }));
 });
 
+fetchSolPrice().then((r) => {
+  if (r) {
+    systemState.solPrice = r.price;
+    priceHistory.push(r.price);
+  }
+});
+setInterval(() => {
+  fetchSolPrice().then((r) => {
+    if (r) systemState.solPrice = r.price;
+  });
+}, 30_000);
+
 setInterval(() => {
   systemState.uptime += 3;
-  systemState.solPrice += (Math.random() - 0.49) * 0.5;
-  systemState.solPrice = Math.max(170, Math.min(200, systemState.solPrice));
+  systemState.solPrice += (Math.random() - 0.499) * 0.3;
+  priceHistory.push(systemState.solPrice);
+  if (priceHistory.length > 20) priceHistory.shift();
 
   systemState.agents.forEach((agent) => {
     if (agent.status !== "running") return;
@@ -159,12 +244,8 @@ setInterval(() => {
 
     agent.lastAction = action;
     agent.lastActionAt = new Date().toISOString();
-    agent.riskLevel =
-      agent.type === "MONITOR" && action === "ALERT"
-        ? "HIGH"
-        : agent.balanceSOL < 0.1
-          ? "MEDIUM"
-          : "LOW";
+    const change24h = lastFetchedPrice?.change24h ?? 0;
+    agent.riskLevel = computeRiskLevel(agent, systemState.solPrice, change24h);
 
     agent.actionLog.unshift({
       action,

@@ -281,10 +281,13 @@ async function fetchSolPrice(): Promise<number | null> {
 
     try {
         const res = await fetch(
-            "https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd",
+            "https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd&include_24hr_change=true",
         );
         if (res.ok) {
-            const data = (await res.json()) as { solana?: { usd?: number } };
+            const data = (await res.json()) as { solana?: { usd?: number; usd_24h_change?: number } };
+            if (data?.solana?.usd_24h_change !== undefined) {
+                priceChange24h = data.solana.usd_24h_change;
+            }
             return data?.solana?.usd || null;
         }
     } catch {
@@ -299,6 +302,15 @@ let solPrice = 170;
 let txCount = 0;
 let uptime = 0;
 let priceInitialized = false;
+const globalPriceHistory: number[] = [];
+let priceChange24h = 0;
+
+function computeVolatility(): number {
+    if (globalPriceHistory.length < 3) return 0;
+    const mean = globalPriceHistory.reduce((a, b) => a + b, 0) / globalPriceHistory.length;
+    const variance = globalPriceHistory.reduce((s, p) => s + (p - mean) ** 2, 0) / globalPriceHistory.length;
+    return Math.sqrt(variance);
+}
 
 const INITIAL_AGENTS: {
     name: string;
@@ -366,8 +378,9 @@ async function bootstrap(): Promise<void> {
     if (price) {
         solPrice = price;
         priceInitialized = true;
+        globalPriceHistory.push(solPrice);
         logger.info(
-            `SOL price initialized: $${solPrice.toFixed(2)} (from Jupiter/CoinGecko)`,
+            `SOL price initialized: $${solPrice.toFixed(2)} (from Jupiter/CoinGecko) | 24h change: ${priceChange24h.toFixed(2)}%`,
         );
     } else {
         logger.warn(`Could not fetch SOL price — using default $${solPrice}`);
@@ -411,6 +424,8 @@ async function tickTrading(agent: LiveAgent): Promise<void> {
     }
     agent.priceHistory.push(solPrice);
     if (agent.priceHistory.length > 20) agent.priceHistory.shift();
+    globalPriceHistory.push(solPrice);
+    if (globalPriceHistory.length > 20) globalPriceHistory.shift();
 
     let decision: "BUY" | "SELL" | "HOLD" = "HOLD";
 
@@ -577,6 +592,59 @@ async function tickMonitor(agent: LiveAgent): Promise<void> {
         riskScore += 35;
     }
 
+    const vol = computeVolatility();
+    const volPct = solPrice > 0 ? (vol / solPrice) * 100 : 0;
+    if (volPct > 1.5) {
+        factors.push(`high price volatility: ${volPct.toFixed(2)}%`);
+        riskScore += 35;
+    } else if (volPct > 0.8) {
+        factors.push(`elevated volatility: ${volPct.toFixed(2)}%`);
+        riskScore += 20;
+    } else if (volPct > 0.4) {
+        factors.push(`mild volatility: ${volPct.toFixed(2)}%`);
+        riskScore += 10;
+    }
+
+    const absDelta = Math.abs(priceChange24h);
+    if (absDelta > 10) {
+        factors.push(`large 24h swing: ${priceChange24h.toFixed(1)}%`);
+        riskScore += 30;
+    } else if (absDelta > 5) {
+        factors.push(`notable 24h move: ${priceChange24h.toFixed(1)}%`);
+        riskScore += 20;
+    } else if (absDelta > 2) {
+        factors.push(`moderate 24h move: ${priceChange24h.toFixed(1)}%`);
+        riskScore += 10;
+    }
+
+    if (globalPriceHistory.length >= 5) {
+        const recent = globalPriceHistory[globalPriceHistory.length - 1];
+        const older  = globalPriceHistory[globalPriceHistory.length - 5];
+        const movePct = Math.abs((recent - older) / older) * 100;
+        if (movePct > 2) {
+            factors.push(`sharp short-term move: ${movePct.toFixed(2)}%`);
+            riskScore += 25;
+        } else if (movePct > 1) {
+            factors.push(`short-term move: ${movePct.toFixed(2)}%`);
+            riskScore += 15;
+        } else if (movePct > 0.5) {
+            factors.push(`minor short-term move: ${movePct.toFixed(2)}%`);
+            riskScore += 8;
+        }
+    }
+
+    const tradingAgents = agents.filter((a) => a.type === "TRADING" && a.status === "running");
+    if (tradingAgents.length > 0) {
+        const avgPnl = tradingAgents.reduce((s, a) => s + a.pnl, 0) / tradingAgents.length;
+        if (avgPnl < -10) {
+            factors.push(`significant portfolio drawdown: ${avgPnl.toFixed(2)} SOL`);
+            riskScore += 20;
+        } else if (avgPnl < -5) {
+            factors.push(`portfolio drawdown: ${avgPnl.toFixed(2)} SOL`);
+            riskScore += 10;
+        }
+    }
+
     const level: RiskLevel =
         riskScore >= 60
             ? "CRITICAL"
@@ -588,13 +656,13 @@ async function tickMonitor(agent: LiveAgent): Promise<void> {
 
     agent.riskLevel = level;
 
-    if (level === "HIGH" || level === "CRITICAL") {
-        agents.forEach((a) => {
-            if (a.id !== agent.id && a.type !== "MONITOR") {
-                a.riskLevel = level === "CRITICAL" ? "HIGH" : "MEDIUM";
-            }
-        });
-    }
+    agents.forEach((a) => {
+        if (a.id !== agent.id && a.type !== "MONITOR") {
+            if (level === "CRITICAL") a.riskLevel = "HIGH";
+            else if (level === "HIGH") a.riskLevel = "MEDIUM";
+            else a.riskLevel = "LOW";
+        }
+    });
 
     const factorStr = factors.length > 0 ? factors.join(", ") : "no risk factors";
     const recommendations: Record<RiskLevel, string> = {

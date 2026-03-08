@@ -10,13 +10,13 @@ export function ActivityFeed({ items }: ActivityFeedProps) {
   return (
     <div className="overflow-y-auto max-h-72 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10">
       <AnimatePresence initial={false}>
-        {items.slice(0, 25).map((item, i) => (
+        {items.slice(0, 25).map((item) => (
           <motion.div
-            key={`${item.agent}-${item.time}-${i}`}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            transition={{ duration: 0.5 }}
+            key={`${item.agent}-${item.time}`}
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
             className="flex items-start gap-3 px-4.5 py-2.5 border-b border-(--border) last:border-0"
           >
             <div
