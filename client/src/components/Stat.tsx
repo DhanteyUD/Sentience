@@ -7,7 +7,7 @@ interface HeaderProps {
 
 export function Stat({ state }: HeaderProps) {
   return (
-    <header className="md:hidden sticky top-0 z-50 flex mb-10">
+    <header className="md:hidden sticky top-0 flex mb-10">
       <div className="flex items-center justify-between gap-3 w-full">
         {[
           {
