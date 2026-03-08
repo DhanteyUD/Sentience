@@ -588,13 +588,13 @@ async function tickMonitor(agent: LiveAgent): Promise<void> {
 
     agent.riskLevel = level;
 
-    if (level === "HIGH" || level === "CRITICAL") {
-        agents.forEach((a) => {
-            if (a.id !== agent.id && a.type !== "MONITOR") {
-                a.riskLevel = level === "CRITICAL" ? "HIGH" : "MEDIUM";
-            }
-        });
-    }
+    agents.forEach((a) => {
+        if (a.id !== agent.id && a.type !== "MONITOR") {
+            if (level === "CRITICAL") a.riskLevel = "HIGH";
+            else if (level === "HIGH") a.riskLevel = "MEDIUM";
+            else a.riskLevel = "LOW";
+        }
+    });
 
     const factorStr = factors.length > 0 ? factors.join(", ") : "no risk factors";
     const recommendations: Record<RiskLevel, string> = {
