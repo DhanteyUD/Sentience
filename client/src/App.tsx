@@ -57,7 +57,8 @@ export default function App() {
               <div className={CARD_HEADER}>
                 <span className={SECTION_TITLE}>
                   <span className="text-[#00d4ff] animate-pulse">◈</span>{" "}
-                  Autonomous Agents
+                  <p className="hidden md:block">Autonomous Agents</p>
+                  <p className="md:hidden">Agents</p>
                   {state && (
                     <span className="hidden md:block font-mono text-zinc-600 normal-case tracking-normal ml-1">
                       (
