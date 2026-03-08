@@ -38,7 +38,7 @@ export function PriceChart({ history, currentPrice }: PriceChartProps) {
         interval: "15",
         timezone: "Etc/UTC",
         theme: "dark",
-        style: "1", // candlestick
+        style: "1",
         container_id: CONTAINER_ID,
         toolbar_bg: "#0d1117",
         hide_top_toolbar: true,
@@ -72,44 +72,29 @@ export function PriceChart({ history, currentPrice }: PriceChartProps) {
       widgetReady.current = true;
     };
 
-    const initWidget = () => {
-      if (window.TradingView) {
-        createWidget();
-      } else {
-        const script = document.createElement("script");
-        script.src = "https://s3.tradingview.com/tv.js";
-        script.async = true;
-        script.onload = createWidget;
-        document.head.appendChild(script);
-      }
-    };
-
-    initWidget();
-
-    const interval = setInterval(() => {
-      const el = document.getElementById(CONTAINER_ID);
-      if (el) el.innerHTML = "";
-      widgetReady.current = false;
+    if (window.TradingView) {
       createWidget();
-    }, 15000);
+    } else {
+      const script = document.createElement("script");
+      script.src = "https://s3.tradingview.com/tv.js";
+      script.async = true;
+      script.onload = createWidget;
+      document.head.appendChild(script);
+    }
 
     return () => {
-      clearInterval(interval);
       const el = document.getElementById(CONTAINER_ID);
       if (el) el.innerHTML = "";
       widgetReady.current = false;
     };
   }, []);
 
-  // ── Render ──────────────────────────────────────────────────────────────
-
   return (
     <div>
-      {/* Header bar — shows live price from your WebSocket data */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.07]">
         <div className="flex items-center gap-3">
           <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500 flex items-center gap-1.5">
-            <span className="text-cyan-400">◇</span> SOL / USD
+            <span className="text-cyan-300">◇</span> SOL / USD
           </span>
           {price > 0 && (
             <span className="font-mono text-[13px] font-bold text-white">
@@ -136,7 +121,6 @@ export function PriceChart({ history, currentPrice }: PriceChartProps) {
         </div>
       </div>
 
-      {/* TradingView chart — real OHLCV candlestick data from Binance */}
       <div className="h-64">
         <div id={CONTAINER_ID} ref={containerRef} className="w-full h-full" />
       </div>
