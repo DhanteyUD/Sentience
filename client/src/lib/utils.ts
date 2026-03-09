@@ -5,21 +5,8 @@ export function timeAgo(iso: string): string {
   return `${Math.floor(diff / 60000)}m ago`;
 }
 
-export function formatUptime(secs: number): string {
-  const weeks = Math.floor(secs / 604800);
-  const days = Math.floor((secs % 604800) / 86400);
-  const hours = Math.floor((secs % 86400) / 3600);
-  const mins = Math.floor((secs % 3600) / 60);
-  const s = secs % 60;
-
-  const hh = String(hours).padStart(2, "0");
-  const mm = String(mins).padStart(2, "0");
-  const ss = String(s).padStart(2, "0");
-  const time = `${hh}:${mm}:${ss}`;
-
-  if (weeks > 0) return `${weeks}w ${days}d ${time}`;
-  if (days > 0) return `${days}d ${time}`;
-  return time;
+export function formatUptime(pct: number): string {
+  return `${pct.toFixed(2)}%`;
 }
 
 export function shortAddress(addr: string): string {

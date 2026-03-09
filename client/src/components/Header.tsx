@@ -54,7 +54,7 @@ export function Header({ state, connected }: HeaderProps) {
           },
           {
             label: "Uptime",
-            value: state ? formatUptime(state.uptime) : "00:00",
+            value: state?.uptimePct != null ? formatUptime(state.uptimePct) : "0.00%",
           },
         ].map(({ label, value }) => (
           <div key={label} className="text-center">
