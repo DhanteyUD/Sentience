@@ -219,6 +219,8 @@ orchestrator.on('alert', (alert) => {})          // Any agent alert
 WALLET_ENCRYPTION_KEY=your-master-password    # Default encryption key
 SOLANA_CLUSTER=devnet                         # devnet | mainnet-beta | testnet
 PORT=3000                                     # Dashboard server port
+NODE_ENV=production                           # production | development
+CLIENT_URL=your-client-url.com                # For CORS and WebSocket connections
 ```
 
 ---
