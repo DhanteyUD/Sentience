@@ -32,6 +32,7 @@ export interface SystemState {
   totalBalance: number
   txCount: number
   uptime: number
+  uptimePct: number
 }
 
 export interface FeedItem {

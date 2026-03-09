@@ -301,6 +301,7 @@ const agents: LiveAgent[] = [];
 let solPrice = 170;
 let txCount = 0;
 let uptime = 0;
+const startedAt = Date.now();
 let priceInitialized = false;
 const globalPriceHistory: number[] = [];
 let priceChange24h = 0;
@@ -741,6 +742,10 @@ function buildSystemState() {
             Math.round(agents.reduce((s, a) => s + a.balanceSOL, 0) * 10000) / 10000,
         txCount,
         uptime,
+        uptimePct: (() => {
+            const totalElapsed = Math.round((Date.now() - startedAt) / 1000);
+            return totalElapsed > 0 ? Math.min(100, (uptime / totalElapsed) * 100) : 100;
+        })(),
     };
 }
 
