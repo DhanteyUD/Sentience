@@ -29,11 +29,17 @@ export function seedKeystoresFromEnv(): void {
     const id = key.slice('KEYSTORE_'.length).replace(/_/g, '-');
     if (!UUID_PATTERN.test(id)) continue;
     const filePath = path.join(KEYSTORE_DIR, `${id}.json`);
-    if (!fs.existsSync(filePath)) {
-      const json = Buffer.from(value, 'base64').toString('utf-8');
-      fs.writeFileSync(filePath, json, { mode: 0o600 });
-      seeded++;
+    if (fs.existsSync(filePath)) {
+      try {
+        JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        continue;
+      } catch {
+        // corrupted — overwrite below
+      }
     }
+    const json = Buffer.from(value, 'base64').toString('utf-8');
+    fs.writeFileSync(filePath, json, { mode: 0o600 });
+    seeded++;
   }
   console.log(`[seedKeystoresFromEnv] seeded=${seeded} keystoreDir=${KEYSTORE_DIR}`);
 }
