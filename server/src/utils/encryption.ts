@@ -2,7 +2,7 @@ import * as CryptoJS from 'crypto-js';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const KEYSTORE_DIR = path.join(process.cwd(), '.keystore');
+const KEYSTORE_DIR = process.env.KEYSTORE_PATH || path.join(process.cwd(), '.keystore');
 
 export interface EncryptedKeystore {
   id: string;
