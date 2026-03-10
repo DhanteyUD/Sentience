@@ -19,6 +19,19 @@ export function ensureKeystoreDir(): void {
   }
 }
 
+export function seedKeystoresFromEnv(): void {
+  ensureKeystoreDir();
+  for (const [key, value] of Object.entries(process.env)) {
+    if (!key.startsWith('KEYSTORE_') || !value) continue;
+    const id = key.slice('KEYSTORE_'.length).replace(/_/g, '-');
+    const filePath = path.join(KEYSTORE_DIR, `${id}.json`);
+    if (!fs.existsSync(filePath)) {
+      const json = Buffer.from(value, 'base64').toString('utf-8');
+      fs.writeFileSync(filePath, json, { mode: 0o600 });
+    }
+  }
+}
+
 export function encryptPrivateKey(privateKeyBytes: Uint8Array, password: string): { encrypted: string; iv: string } {
   const privateKeyHex = Buffer.from(privateKeyBytes).toString('hex');
   const iv = CryptoJS.lib.WordArray.random(16);
