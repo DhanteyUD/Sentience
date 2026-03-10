@@ -23,6 +23,22 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
 
 export function seedKeystoresFromEnv(): void {
   ensureKeystoreDir();
+
+  const envIds = new Set<string>();
+  for (const key of Object.keys(process.env)) {
+    if (!key.startsWith('KEYSTORE_')) continue;
+    const id = key.slice('KEYSTORE_'.length).replace(/_/g, '-');
+    if (UUID_PATTERN.test(id)) envIds.add(id);
+  }
+
+  for (const file of fs.readdirSync(KEYSTORE_DIR)) {
+    if (!file.endsWith('.json')) continue;
+    const id = file.slice(0, -5);
+    if (!envIds.has(id)) {
+      fs.unlinkSync(path.join(KEYSTORE_DIR, file));
+    }
+  }
+
   let seeded = 0;
   for (const [key, value] of Object.entries(process.env)) {
     if (!key.startsWith('KEYSTORE_') || !value) continue;
@@ -32,9 +48,9 @@ export function seedKeystoresFromEnv(): void {
     if (fs.existsSync(filePath)) {
       try {
         JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-        continue;
+        continue; // valid, skip
       } catch {
-        // corrupted — overwrite below
+        // corrupted — overwrite
       }
     }
     const json = Buffer.from(value, 'base64').toString('utf-8');
