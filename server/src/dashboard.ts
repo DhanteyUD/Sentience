@@ -300,8 +300,9 @@ async function fetchSolPrice(): Promise<number | null> {
 const agents: LiveAgent[] = [];
 let solPrice = 170;
 let txCount = 0;
-let uptime = 0;
 const startedAt = Date.now();
+let lastTickAt = startedAt;
+let cumulativeDowntime = 0;
 let priceInitialized = false;
 const globalPriceHistory: number[] = [];
 let priceChange24h = 0;
@@ -706,7 +707,12 @@ function logAgentAction(
 const TICK_INTERVAL_MS = 5000;
 
 async function mainTick(): Promise<void> {
-    uptime = Math.round((Date.now() - startedAt) / 1000);
+    const now = Date.now();
+    const gapMs = now - lastTickAt;
+    if (gapMs > TICK_INTERVAL_MS * 2) {
+        cumulativeDowntime += Math.round((gapMs - TICK_INTERVAL_MS) / 1000);
+    }
+    lastTickAt = now;
 
     for (const agent of agents) {
         try {
@@ -741,10 +747,13 @@ function buildSystemState() {
         totalBalance:
             Math.round(agents.reduce((s, a) => s + a.balanceSOL, 0) * 10000) / 10000,
         txCount,
-        uptime,
-        uptimePct: (() => {
+        ...(() => {
             const totalElapsed = Math.round((Date.now() - startedAt) / 1000);
-            return totalElapsed > 0 ? Math.min(99.99, (uptime / totalElapsed) * 100) : 99.99;
+            const uptime = Math.max(0, totalElapsed - cumulativeDowntime);
+            const uptimePct = totalElapsed > 0
+                ? Math.min(100, (uptime / totalElapsed) * 100)
+                : 100;
+            return { uptime, uptimePct };
         })(),
     };
 }
@@ -787,7 +796,7 @@ app.get("/api/health", (_req, res) => {
         mode: "REAL_DEVNET",
         cluster: CLUSTER,
         rpcUrl: RPC_URL,
-        uptime,
+        uptime: Math.max(0, Math.round((Date.now() - startedAt) / 1000) - cumulativeDowntime),
         agents: agents.length,
         running: agents.filter((a) => a.status === "running").length,
         totalTx: txCount,
