@@ -1,6 +1,4 @@
 #!/bin/bash
-# Uploads .keystore files to the Railway volume via railway run
-# Usage: ./scripts/upload-keystores.sh
 
 set -e
 

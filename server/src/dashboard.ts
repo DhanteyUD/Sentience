@@ -20,10 +20,12 @@ import {
     saveKeystore,
     listKeystores,
     ensureKeystoreDir,
+    seedKeystoresFromEnv,
 } from "./utils/encryption";
 import { logger } from "./utils/logger";
 
 dotenv.config({ path: path.join(__dirname, "../.env") });
+seedKeystoresFromEnv();
 
 const CLUSTER = (process.env.SOLANA_CLUSTER as string) || "devnet";
 const RPC_URL = clusterApiUrl(CLUSTER as any);
