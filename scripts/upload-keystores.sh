@@ -4,8 +4,9 @@
 
 set -e
 
-KEYSTORE_DIR="server/.keystore"
-REMOTE_DIR="/app/server/.keystore"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+KEYSTORE_DIR="$SCRIPT_DIR/../server/.keystore"
+REMOTE_DIR="/app/.keystore"
 
 if ! command -v railway &> /dev/null; then
   echo "Railway CLI not found. Install it: npm install -g @railway/cli"
