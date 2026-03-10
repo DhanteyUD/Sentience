@@ -31,11 +31,13 @@ export function seedKeystoresFromEnv(): void {
     if (UUID_PATTERN.test(id)) envIds.add(id);
   }
 
-  for (const file of fs.readdirSync(KEYSTORE_DIR)) {
-    if (!file.endsWith('.json')) continue;
-    const id = file.slice(0, -5);
-    if (!envIds.has(id)) {
-      fs.unlinkSync(path.join(KEYSTORE_DIR, file));
+  if (envIds.size > 0) {
+    for (const file of fs.readdirSync(KEYSTORE_DIR)) {
+      if (!file.endsWith('.json')) continue;
+      const id = file.slice(0, -5);
+      if (!envIds.has(id)) {
+        fs.unlinkSync(path.join(KEYSTORE_DIR, file));
+      }
     }
   }
 

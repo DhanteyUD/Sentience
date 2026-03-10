@@ -3,7 +3,6 @@ import { Check, Copy, ExternalLink, Loader2, Pause, Play, Square } from "lucide-
 import { useState } from "react";
 import type { Agent } from "../types";
 import {
-  timeAgo,
   ACTION_COLORS,
   RISK_CONFIG,
   STATUS_CONFIG,
@@ -119,8 +118,8 @@ export function AgentCard({ agent, index, onControl }: AgentCardProps) {
         >
           {agent.lastAction}
         </span>
-        <span className="text-[10px] text-zinc-400 font-mono">
-          {timeAgo(agent.lastActionAt)}
+        <span className="text-[10px] text-zinc-400 font-mono truncate max-w-full">
+          {agent.actionLog[0]?.result ?? "—"}
         </span>
       </div>
 
