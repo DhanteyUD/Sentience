@@ -90,7 +90,7 @@ async function runTests(): Promise<void> {
 
   await test('Cannot load wallet with wrong password', async () => {
     const loaded = AgentWallet.load(testWallet.id, 'wrong-password');
-    // Either null or wrong key — we just check it doesn't crash
+    // Either null or wrong key — just check it doesn't crash
     assert(true, 'Should handle gracefully');
   });
 
@@ -129,7 +129,7 @@ async function runTests(): Promise<void> {
       assert(balance > 0, 'Balance should be > 0 after airdrop');
       logger.info(`  Airdrop balance: ${balance.toFixed(4)} SOL`);
     } catch (e: any) {
-      // Airdrop can fail due to rate limiting; we soft-fail this test
+      // Airdrop can fail due to rate limiting; soft-fail
       logger.warn(`  Airdrop unavailable (rate limited): ${e.message}`);
       assert(true, 'Soft pass — rate limited');
     }

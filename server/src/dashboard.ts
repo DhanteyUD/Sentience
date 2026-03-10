@@ -706,7 +706,7 @@ function logAgentAction(
 const TICK_INTERVAL_MS = 5000;
 
 async function mainTick(): Promise<void> {
-    uptime += Math.round(TICK_INTERVAL_MS / 1000);
+    uptime = Math.round((Date.now() - startedAt) / 1000);
 
     for (const agent of agents) {
         try {
@@ -744,7 +744,7 @@ function buildSystemState() {
         uptime,
         uptimePct: (() => {
             const totalElapsed = Math.round((Date.now() - startedAt) / 1000);
-            return totalElapsed > 0 ? Math.min(100, (uptime / totalElapsed) * 100) : 100;
+            return totalElapsed > 0 ? Math.min(99.99, (uptime / totalElapsed) * 100) : 99.99;
         })(),
     };
 }
