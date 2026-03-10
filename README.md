@@ -1,6 +1,6 @@
 # ⬡ Sentience — Autonomous AI Agent Wallets for Solana
 
-> **Hackathon Submission**: A full-stack system where AI agents autonomously create, manage, and transact from their own encrypted Solana wallets — no human in the loop.
+> A full-stack system where AI agents autonomously create, manage, and transact from their own encrypted Solana wallets — no human in the loop.
 
 ![Solana Devnet](https://img.shields.io/badge/Solana-Devnet-cyan?style=flat-square)
 ![Encryption AES-256-CBC](https://img.shields.io/badge/Encryption-AES--256--CBC-green?style=flat-square)
