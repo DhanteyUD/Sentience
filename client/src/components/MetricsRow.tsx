@@ -7,13 +7,19 @@ interface MetricsRowProps {
 }
 
 export function MetricsRow({ state }: MetricsRowProps) {
-  const decisionCountRef = useRef(0)
+  const ticksRef = useRef<number[]>([])
   const [dpm, setDpm] = useState(0)
 
   useEffect(() => {
     if (!state) return
-    decisionCountRef.current += state.agents.filter(a => a.status === 'running').length
-    setDpm(Math.floor(decisionCountRef.current / Math.max(state.uptime / 60, 1)))
+    const running = state.agents.filter(a => a.status === 'running').length
+    if (running === 0) return
+    const now = Date.now()
+    ticksRef.current.push(...Array(running).fill(now))
+    
+    // keep only ticks from the last 60 seconds
+    ticksRef.current = ticksRef.current.filter(t => now - t < 60_000)
+    setDpm(ticksRef.current.length)
   }, [state])
 
   const running = state?.agents.filter(a => a.status === 'running').length ?? 0
